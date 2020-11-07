@@ -24,6 +24,7 @@ import org.xmlpull.v1.XmlPullParser.END_TAG
 import org.xmlpull.v1.XmlPullParser.START_TAG
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
+import kotlin.math.log10
 
 /**
  * Parser that converts [icon]s into [Vector]s
@@ -76,8 +77,16 @@ class IconParser(private val icon: Icon) {
                                 ?.let { StrokeJoin.values().find { strokeJoin -> strokeJoin.name.equals(it, ignoreCase = true) } }
                             val strokeMiterLimit = parser.getValueAsFloat(STROKE_MITER_LIMIT)
 
+                            val strokeColor = parser.getAttributeValue(null, STROKE_COLOR)
+                                ?.toHexColor()
+
+                            val fillColor = parser.getAttributeValue(null, FILL_COLOR)
+                                ?.toHexColor()
+
 
                             val path = VectorNode.Path(
+                                fillColorHex = fillColor,
+                                strokeColorHex = strokeColor,
                                 strokeAlpha = strokeAlpha ?: 1f,
                                 fillAlpha = fillAlpha ?: 1f,
                                 strokeLineWidth = strokeWidth,
@@ -138,6 +147,14 @@ private fun XmlPullParser.seekToStartTag(): XmlPullParser {
 private fun XmlPullParser.isAtEnd() =
     eventType == END_DOCUMENT || (depth < 1 && eventType == END_TAG)
 
+private fun String.toHexColor(): String? {
+    return removePrefix("#")
+        .let {
+            if(it.length > 6) it
+            else "FF$it"
+        }
+}
+
 // XML tag names
 private const val CLIP_PATH = "clip-path"
 private const val GROUP = "group"
@@ -151,7 +168,9 @@ private const val FILL_TYPE = "android:fillType"
 private const val STROKE_LINE_CAP = "android:strokeLineCap"
 private const val STROKE_WIDTH = "android:strokeWidth"
 private const val STROKE_LINE_JOIN = "android:strokeLineJoin"
-private const val STROKE_MITER_LIMIT = "strokeMiterLimit"
+private const val STROKE_MITER_LIMIT = "android:strokeMiterLimit"
+private const val STROKE_COLOR = "android:strokeColor"
+private const val FILL_COLOR = "android:fillColor"
 
 // Vector XML attribute names
 private const val WIDTH = "android:width"

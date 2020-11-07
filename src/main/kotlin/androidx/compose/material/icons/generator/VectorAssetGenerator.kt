@@ -166,8 +166,13 @@ private fun CodeBlock.Builder.addPath(
     path: VectorNode.Path,
     pathBody: CodeBlock.Builder.() -> Unit
 ) {
+    val hasFillColor = path.fillColorHex != null
+    val hasStrokeColor = path.strokeColorHex != null
+
     val parameterList = with(path) {
         listOfNotNull(
+            "fill = ${if(hasFillColor) "%M(%M(0x$fillColorHex))" else "null"}",
+            "stroke = ${if(hasStrokeColor) "%M(%M(0x$strokeColorHex))" else "null"}",
             "fillAlpha = ${fillAlpha}f".takeIf { fillAlpha != 1f },
             "strokeAlpha = ${strokeAlpha}f".takeIf { strokeAlpha != 1f },
             "strokeLineWidth = ${strokeLineWidth.withMemberIfNotNull}",
@@ -182,6 +187,10 @@ private fun CodeBlock.Builder.addPath(
 
     val members: Array<Any> = listOfNotNull(
         MemberNames.Path,
+        MemberNames.SolidColor.takeIf { hasFillColor },
+        MemberNames.Color.takeIf { hasFillColor },
+        MemberNames.SolidColor.takeIf { hasStrokeColor },
+        MemberNames.Color.takeIf { hasStrokeColor },
         path.strokeLineWidth.memberName,
         path.strokeLineCap.memberName,
         path.strokeLineJoin.memberName,

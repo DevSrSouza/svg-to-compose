@@ -62,6 +62,9 @@ object MemberNames {
     val StrokeJoinBevel = MemberName(ClassNames.StrokeJoin, "Bevel")
 
     val Dp = MemberName(PackageNames.Unit.packageName, "dp")
+
+    val Color = MemberName(PackageNames.GraphicsPackage.packageName, "Color")
+    val SolidColor = MemberName(PackageNames.GraphicsPackage.packageName, "SolidColor")
 }
 
 /**

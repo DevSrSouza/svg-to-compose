@@ -39,6 +39,8 @@ class Vector(
 sealed class VectorNode {
     class Group(val paths: MutableList<Path> = mutableListOf()) : VectorNode()
     class Path(
+        val fillColorHex: String?,
+        val strokeColorHex: String?,
         val strokeAlpha: Float,
         val fillAlpha: Float,
         val strokeLineWidth: GraphicUnit,
