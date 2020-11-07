@@ -80,6 +80,25 @@ class VectorAssetGenerator(
      * property, and then returns the backing property.
      */
     private fun iconGetter(backingProperty: PropertySpec): FunSpec {
+
+        val parameterList = with(vector) {
+            listOfNotNull(
+                "name = \"${iconName}\"",
+                "defaultWidth = ${width.withMemberIfNotNull}",
+                "defaultHeight = ${height.withMemberIfNotNull}",
+                "viewportWidth = ${viewportWidth}f",
+                "viewportHeight = ${viewportHeight}f"
+            )
+        }
+
+        val parameters = parameterList.joinToString(prefix = "(", postfix = ")")
+
+        val members: Array<Any> = listOfNotNull(
+            MemberNames.VectorAssetBuilder,
+            vector.width.memberName,
+            vector.height.memberName
+        ).toTypedArray()
+
         return FunSpec.getterBuilder()
             .addCode(buildCodeBlock {
                 beginControlFlow("if (%N != null)", backingProperty)
@@ -87,9 +106,14 @@ class VectorAssetGenerator(
                 endControlFlow()
             })
             .addCode(buildCodeBlock {
-                beginControlFlow("%N = %M", backingProperty, MemberNames.MaterialIcon)
+                beginControlFlow(
+                    "%N = %M$parameters.apply",
+                    backingProperty,
+                    *members
+                )
                 vector.nodes.forEach { node -> addRecursively(node) }
                 endControlFlow()
+                addStatement(".build()")
             })
             .addStatement("return %N!!", backingProperty)
             .build()
@@ -142,13 +166,11 @@ private fun CodeBlock.Builder.addPath(
     path: VectorNode.Path,
     pathBody: CodeBlock.Builder.() -> Unit
 ) {
-    val usesExtension = path.strokeLineWidth.memberName != null
-
     val parameterList = with(path) {
         listOfNotNull(
             "fillAlpha = ${fillAlpha}f".takeIf { fillAlpha != 1f },
             "strokeAlpha = ${strokeAlpha}f".takeIf { strokeAlpha != 1f },
-            "strokeLineWidth = ${strokeLineWidth.value}${if (usesExtension) ".%M" else ""}",
+            "strokeLineWidth = ${strokeLineWidth.withMemberIfNotNull}",
             "strokeLineCap = %M",
             "strokeLineJoin = %M",
             "strokeLineMiter = ${strokeLineMiter}f",
@@ -156,11 +178,7 @@ private fun CodeBlock.Builder.addPath(
         )
     }
 
-    val parameters = if (parameterList.isNotEmpty()) {
-        parameterList.joinToString(prefix = "(", postfix = ")")
-    } else {
-        ""
-    }
+    val parameters = parameterList.joinToString(prefix = "(", postfix = ")")
 
     val members: Array<Any> = listOfNotNull(
         MemberNames.Path,
@@ -178,3 +196,5 @@ private fun CodeBlock.Builder.addPath(
     pathBody()
     endControlFlow()
 }
+
+private val GraphicUnit.withMemberIfNotNull: String get() = "${value}${if (memberName != null) ".%M" else "f"}"

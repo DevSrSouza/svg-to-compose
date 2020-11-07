@@ -44,8 +44,8 @@ object ClassNames {
  * [MemberName]s used for icon generation.
  */
 object MemberNames {
-    val MaterialIcon = MemberName(PackageNames.MaterialIconsPackage.packageName, "materialIcon")
-    val MaterialPath = MemberName(PackageNames.MaterialIconsPackage.packageName, "materialPath")
+    val VectorAssetBuilder = MemberName(PackageNames.VectorPackage.packageName, "VectorAssetBuilder")
+
     val Path = MemberName(PackageNames.VectorPackage.packageName, "path")
 
     val EvenOdd = MemberName(ClassNames.PathFillType, "EvenOdd")
