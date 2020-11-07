@@ -25,7 +25,8 @@ import com.squareup.kotlinpoet.MemberName
 enum class PackageNames(val packageName: String) {
     MaterialIconsPackage("androidx.compose.material.icons"),
     GraphicsPackage("androidx.compose.ui.graphics"),
-    VectorPackage(GraphicsPackage.packageName + ".vector")
+    VectorPackage(GraphicsPackage.packageName + ".vector"),
+    Unit("androidx.compose.ui.unit"),
 }
 
 /**
@@ -35,6 +36,8 @@ object ClassNames {
     val Icons = PackageNames.MaterialIconsPackage.className("Icons")
     val VectorAsset = PackageNames.VectorPackage.className("VectorAsset")
     val PathFillType = PackageNames.GraphicsPackage.className("PathFillType")
+    val StrokeCap = PackageNames.GraphicsPackage.className("StrokeCap")
+    val StrokeJoin = PackageNames.GraphicsPackage.className("StrokeJoin")
 }
 
 /**
@@ -43,9 +46,22 @@ object ClassNames {
 object MemberNames {
     val MaterialIcon = MemberName(PackageNames.MaterialIconsPackage.packageName, "materialIcon")
     val MaterialPath = MemberName(PackageNames.MaterialIconsPackage.packageName, "materialPath")
+    val Path = MemberName(PackageNames.VectorPackage.packageName, "path")
 
     val EvenOdd = MemberName(ClassNames.PathFillType, "EvenOdd")
+    val NonZero = MemberName(ClassNames.PathFillType, "NonZero")
+
     val Group = MemberName(PackageNames.VectorPackage.packageName, "group")
+
+    val StrokeCapButt = MemberName(ClassNames.StrokeCap, "Butt")
+    val StrokeCapRound = MemberName(ClassNames.StrokeCap, "Round")
+    val StrokeCapSquare = MemberName(ClassNames.StrokeCap, "Square")
+
+    val StrokeJoinMiter = MemberName(ClassNames.StrokeJoin, "Miter")
+    val StrokeJoinRound = MemberName(ClassNames.StrokeJoin, "Round")
+    val StrokeJoinBevel = MemberName(ClassNames.StrokeJoin, "Bevel")
+
+    val Dp = MemberName(PackageNames.Unit.packageName, "dp")
 }
 
 /**

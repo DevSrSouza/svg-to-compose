@@ -17,10 +17,7 @@
 
 package androidx.compose.material.icons.generator
 
-import androidx.compose.material.icons.generator.vector.FillType
-import androidx.compose.material.icons.generator.vector.PathParser
-import androidx.compose.material.icons.generator.vector.Vector
-import androidx.compose.material.icons.generator.vector.VectorNode
+import androidx.compose.material.icons.generator.vector.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParser.END_DOCUMENT
 import org.xmlpull.v1.XmlPullParser.END_TAG
@@ -43,6 +40,11 @@ class IconParser(private val icon: Icon) {
         }
 
         check(parser.name == "vector") { "The start tag must be <vector>!" }
+
+        val width = rawAsGraphicUnit(parser.getAttributeValue(null, WIDTH))
+        val height = rawAsGraphicUnit(parser.getAttributeValue(null, HEIGHT))
+        val viewportWidth = parser.getAttributeValue(null, VIEWPORT_WIDTH).toFloat()
+        val viewportHeight = parser.getAttributeValue(null, VIEWPORT_HEIGHT).toFloat()
 
         parser.next()
 
@@ -67,9 +69,21 @@ class IconParser(private val icon: Icon) {
                                 EVEN_ODD -> FillType.EvenOdd
                                 else -> FillType.NonZero
                             }
+                            val strokeCap = parser.getAttributeValue(null, STROKE_LINE_CAP)
+                                ?.let { StrokeCap.values().find { strokeCap -> strokeCap.name.equals(it, ignoreCase = true) } }
+                            val strokeWidth = rawAsGraphicUnit(parser.getAttributeValue(null, STROKE_WIDTH) ?: "0")
+                            val strokeJoin = parser.getAttributeValue(null, STROKE_LINE_JOIN)
+                                ?.let { StrokeJoin.values().find { strokeJoin -> strokeJoin.name.equals(it, ignoreCase = true) } }
+                            val strokeMiterLimit = parser.getValueAsFloat(STROKE_MITER_LIMIT)
+
+
                             val path = VectorNode.Path(
                                 strokeAlpha = strokeAlpha ?: 1f,
                                 fillAlpha = fillAlpha ?: 1f,
+                                strokeLineWidth = strokeWidth,
+                                strokeLineCap = strokeCap ?: StrokeCap.Butt,
+                                strokeLineJoin = strokeJoin ?: StrokeJoin.Miter,
+                                strokeLineMiter = strokeMiterLimit ?: 4.0f,
                                 fillType = fillType,
                                 nodes = PathParser.parsePathString(pathData)
                             )
@@ -93,7 +107,13 @@ class IconParser(private val icon: Icon) {
             parser.next()
         }
 
-        return Vector(nodes)
+        return Vector(
+            width,
+            height,
+            viewportWidth,
+            viewportHeight,
+            nodes
+        )
     }
 }
 
@@ -123,11 +143,22 @@ private const val CLIP_PATH = "clip-path"
 private const val GROUP = "group"
 private const val PATH = "path"
 
-// XML attribute names
+// Path XML attribute names
 private const val PATH_DATA = "android:pathData"
 private const val FILL_ALPHA = "android:fillAlpha"
 private const val STROKE_ALPHA = "android:strokeAlpha"
 private const val FILL_TYPE = "android:fillType"
+private const val STROKE_LINE_CAP = "android:strokeLineCap"
+private const val STROKE_WIDTH = "android:strokeWidth"
+private const val STROKE_LINE_JOIN = "android:strokeLineJoin"
+private const val STROKE_MITER_LIMIT = "strokeMiterLimit"
+
+// Vector XML attribute names
+private const val WIDTH = "android:width"
+private const val HEIGHT = "android:height"
+private const val VIEWPORT_WIDTH = "android:viewportWidth"
+private const val VIEWPORT_HEIGHT = "android:viewportHeight"
+
 
 // XML attribute values
 private const val EVEN_ODD = "evenOdd"

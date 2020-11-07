@@ -16,13 +16,21 @@
 
 package androidx.compose.material.icons.generator.vector
 
+import androidx.compose.material.icons.generator.GraphicUnit
+
 /**
  * Simplified representation of a vector, with root [nodes].
  *
  * [nodes] may either be a singleton list of the root group, or a list of root paths / groups if
  * there are multiple top level declaration.
  */
-class Vector(val nodes: List<VectorNode>)
+class Vector(
+    val width: GraphicUnit,
+    val height: GraphicUnit,
+    val viewportWidth: Float,
+    val viewportHeight: Float,
+    val nodes: List<VectorNode>
+)
 
 /**
  * Simplified vector node representation, as the total set of properties we need to care about
@@ -33,6 +41,10 @@ sealed class VectorNode {
     class Path(
         val strokeAlpha: Float,
         val fillAlpha: Float,
+        val strokeLineWidth: GraphicUnit,
+        val strokeLineCap: StrokeCap,
+        val strokeLineJoin: StrokeJoin,
+        val strokeLineMiter: Float,
         val fillType: FillType,
         val nodes: List<PathNode>
     ) : VectorNode()

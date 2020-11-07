@@ -142,14 +142,17 @@ private fun CodeBlock.Builder.addPath(
     path: VectorNode.Path,
     pathBody: CodeBlock.Builder.() -> Unit
 ) {
-    // Only set the fill type if it is EvenOdd - otherwise it will just be the default.
-    val setFillType = path.fillType == FillType.EvenOdd
+    val usesExtension = path.strokeLineWidth.memberName != null
 
     val parameterList = with(path) {
         listOfNotNull(
             "fillAlpha = ${fillAlpha}f".takeIf { fillAlpha != 1f },
             "strokeAlpha = ${strokeAlpha}f".takeIf { strokeAlpha != 1f },
-            "pathFillType = %M".takeIf { setFillType }
+            "strokeLineWidth = ${strokeLineWidth.value}${if (usesExtension) ".%M" else ""}",
+            "strokeLineCap = %M",
+            "strokeLineJoin = %M",
+            "strokeLineMiter = ${strokeLineMiter}f",
+            "pathFillType = %M"
         )
     }
 
@@ -159,11 +162,19 @@ private fun CodeBlock.Builder.addPath(
         ""
     }
 
-    if (setFillType) {
-        beginControlFlow("%M$parameters", MemberNames.MaterialPath, MemberNames.EvenOdd)
-    } else {
-        beginControlFlow("%M$parameters", MemberNames.MaterialPath)
-    }
+    val members: Array<Any> = listOfNotNull(
+        MemberNames.Path,
+        path.strokeLineWidth.memberName,
+        path.strokeLineCap.memberName,
+        path.strokeLineJoin.memberName,
+        path.fillType.memberName
+    ).toTypedArray()
+
+    beginControlFlow(
+        "%M$parameters",
+       *members
+    )
+
     pathBody()
     endControlFlow()
 }
