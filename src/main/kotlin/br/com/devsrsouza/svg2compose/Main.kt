@@ -4,14 +4,13 @@ import java.io.File
 
 fun main() {
     val iconTest = File("raw-icons")
-    val svgFiles = iconTest.listFiles().filter { it.extension == "svg" }
     val src = File("build/generated-icons")
 
     Svg2Compose.parse(
         "br.com.devsrsouza.myfuckingapp.icons",
-        "Linea/Weather",
+        "Linea",
         src,
-        svgFiles,
+        iconTest,
         iconNameTransformer = { it.removePrefix("Weather") }
     )
 }

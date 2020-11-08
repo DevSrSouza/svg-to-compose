@@ -18,6 +18,8 @@ package androidx.compose.material.icons.generator
 
 import java.io.File
 
+typealias IconGroup = String
+
 /**
  * Generates programmatic representation of all [icons] using [VectorAssetGenerator].
  *
@@ -25,8 +27,7 @@ import java.io.File
  */
 class IconWriter(
     private val applicationIconPackage: String,
-    private val iconGroup: String,
-    private val icons: List<Icon>,
+    private val icons: List<Pair<IconGroup, Icon>>,
     private val iconNameTransformer: (String) -> String
 ) {
     /**
@@ -42,10 +43,17 @@ class IconWriter(
         iconNamePredicate: (String) -> Boolean
     ) {
         // generating objects related to iconGroup
-        val groupWriter = IconGroupWriter(applicationIconPackage, iconGroup)
-        val lastGroupClassName = groupWriter.writeTo(outputSrcDirectory)
+        val groups = icons.map { it.first }.distinct()
+            .associateWith {
+                val groupWriter = IconGroupWriter(applicationIconPackage, it)
+                val lastGroupClassName = groupWriter.writeTo(outputSrcDirectory)
 
-        icons.forEach { icon ->
+                lastGroupClassName
+            }
+
+
+
+        icons.forEach { (group, icon) ->
             val iconName = icon.kotlinName.trim()
 
             if (!iconNamePredicate(iconName)) return@forEach
@@ -55,9 +63,9 @@ class IconWriter(
             val fileSpec = VectorAssetGenerator(
                 applicationIconPackage,
                 iconNameTransformer(iconName),
-                iconGroup,
+                group,
                 vector
-            ).createFileSpec(lastGroupClassName)
+            ).createFileSpec(groups[group]!!)
 
             fileSpec.writeTo(outputSrcDirectory)
         }

@@ -1,10 +1,10 @@
 package br.com.devsrsouza.svg2compose
 
 import androidx.compose.material.icons.generator.Icon
+import androidx.compose.material.icons.generator.IconGroup
 import androidx.compose.material.icons.generator.IconWriter
 import androidx.compose.material.icons.generator.toKotlinPropertyName
 import com.android.ide.common.vectordrawable.Svg2Vector
-import com.google.common.base.CaseFormat
 import java.io.File
 
 object Svg2Compose {
@@ -15,36 +15,53 @@ object Svg2Compose {
      * Supported types: SVG, Android Vector Drawable XML
      *
      * @param applicationIconPackage Represents what will be the final package of the generated Vector Source. ex com.yourcompany.yourapplication.icons
-     * @param iconGroup Represents the Icon call chain on the code: Group1.Group2.IconFileName = "Group1/Group2". separated by `/` .
+     * @param accessorName will be usage to access the Vector in the code like `MyIconPack.IconName` or `MyIconPack.IconGroupDir.IconName`
      */
     fun parse(
         applicationIconPackage: String,
-        iconGroup: String,
+        accessorName: String,
         outputSourceDirectory: File,
-        vectors: List<File>,
+        vectorsDirectory: File,
         type: VectorType = VectorType.SVG,
         iconNameTransformer: (String) -> String = { it }
     ) {
         val drawableDir = drawableTempDirectory()
+        val depthFiles = vectorsDirectory.walkTopDown()
+            .maxDepth(8)
+            .filter { it.isFile }
 
-        val drawables: List<File> = when(type) {
-            VectorType.SVG -> vectors.map {
-                val parsedFile = File(drawableDir, "${it.nameWithoutExtension}.xml")
+        fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
+
+        val drawables: List<Pair<IconGroup, File>> = when(type) {
+            VectorType.SVG -> depthFiles.map {
+                val iconName = nameRelative(it).withoutExtension
+
+                val parsedFile = File(drawableDir, "${iconName}.xml")
+                parsedFile.parentFile.mkdirs()
+
                 Svg2Vector.parseSvgToXml(it, parsedFile.outputStream())
 
-                parsedFile
-            }
-            VectorType.DRAWABLE -> vectors
+                "${accessorName}/$iconName" to parsedFile
+            }.toList()
+            VectorType.DRAWABLE -> depthFiles
+                .map {
+                    val iconName = nameRelative(it).withoutExtension
+
+                    "${accessorName}/$iconName" to it
+                }.toList()
         }
 
         val icons = drawables.map {
-            val name = it.nameWithoutExtension
-            Icon(name.toKotlinPropertyName(), name, it.readText())
+            val groups = it.first.split("/")
+            groups.take(groups.size-1).map { it.toKotlinPropertyName() }.joinToString("/") to Icon(
+                groups.last().toKotlinPropertyName(),
+                groups.last(),
+                it.second.readText()
+            )
         }
 
         val writer = IconWriter(
             applicationIconPackage,
-            iconGroup,
             icons,
             iconNameTransformer
         )
@@ -54,4 +71,5 @@ object Svg2Compose {
 
     private fun drawableTempDirectory() = createTempDir(suffix = "svg2compose/")
 
+    private val String.withoutExtension get() = substringBeforeLast(".")
 }
