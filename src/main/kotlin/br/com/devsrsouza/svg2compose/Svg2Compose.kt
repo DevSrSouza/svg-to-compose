@@ -7,6 +7,8 @@ import androidx.compose.material.icons.generator.toKotlinPropertyName
 import com.android.ide.common.vectordrawable.Svg2Vector
 import java.io.File
 
+typealias IconNameTransformer = (iconName: String, group: String) -> String
+
 object Svg2Compose {
 
     /**
@@ -23,12 +25,13 @@ object Svg2Compose {
         outputSourceDirectory: File,
         vectorsDirectory: File,
         type: VectorType = VectorType.SVG,
-        iconNameTransformer: (String) -> String = { it }
+        iconNameTransformer: IconNameTransformer = { it, _ -> it }
     ) {
         val drawableDir = drawableTempDirectory()
         val depthFiles = vectorsDirectory.walkTopDown()
             .maxDepth(8)
-            .filter { it.isFile }
+            .filter { !it.isDirectory }
+            .filter { it.extension.equals(type.extension, ignoreCase = true) }
 
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
 

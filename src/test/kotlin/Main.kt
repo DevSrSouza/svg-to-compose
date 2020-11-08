@@ -11,6 +11,6 @@ fun main() {
         "Linea",
         src,
         iconTest,
-        iconNameTransformer = { it.removePrefix("Weather") }
+        iconNameTransformer = { name, group -> name.removePrefix(group.split("/").last()) }
     )
 }

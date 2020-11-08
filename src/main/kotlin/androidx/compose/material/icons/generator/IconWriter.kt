@@ -16,6 +16,7 @@
 
 package androidx.compose.material.icons.generator
 
+import br.com.devsrsouza.svg2compose.IconNameTransformer
 import java.io.File
 
 typealias IconGroup = String
@@ -28,7 +29,7 @@ typealias IconGroup = String
 class IconWriter(
     private val applicationIconPackage: String,
     private val icons: List<Pair<IconGroup, Icon>>,
-    private val iconNameTransformer: (String) -> String
+    private val iconNameTransformer: IconNameTransformer
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -51,8 +52,6 @@ class IconWriter(
                 lastGroupClassName
             }
 
-
-
         icons.forEach { (group, icon) ->
             val iconName = icon.kotlinName.trim()
 
@@ -62,7 +61,7 @@ class IconWriter(
 
             val fileSpec = VectorAssetGenerator(
                 applicationIconPackage,
-                iconNameTransformer(iconName),
+                iconNameTransformer(iconName, group),
                 group,
                 vector
             ).createFileSpec(groups[group]!!)
