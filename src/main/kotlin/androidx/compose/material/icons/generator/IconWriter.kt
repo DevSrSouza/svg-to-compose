@@ -23,7 +23,12 @@ import java.io.File
  *
  * @property icons the list of [Icon]s to generate Kotlin files for
  */
-class IconWriter(private val icons: List<Icon>) {
+class IconWriter(
+    private val applicationIconPackage: String,
+    private val iconGroup: String,
+    private val icons: List<Icon>,
+    private val iconNameTransformer: (String) -> String
+) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
      * filter what icons to generate for.
@@ -36,18 +41,25 @@ class IconWriter(private val icons: List<Icon>) {
         outputSrcDirectory: File,
         iconNamePredicate: (String) -> Boolean
     ) {
+        // generating objects related to iconGroup
+        val groupWriter = IconGroupWriter(applicationIconPackage, iconGroup)
+        val lastGroupClassName = groupWriter.writeTo(outputSrcDirectory)
+
         icons.forEach { icon ->
-            if (!iconNamePredicate(icon.kotlinName)) return@forEach
+            val iconName = icon.kotlinName.trim()
+
+            if (!iconNamePredicate(iconName)) return@forEach
 
             val vector = IconParser(icon).parse()
 
             val fileSpec = VectorAssetGenerator(
-                icon.kotlinName,
-                icon.theme,
+                applicationIconPackage,
+                iconNameTransformer(iconName),
+                iconGroup,
                 vector
-            ).createFileSpec()
+            ).createFileSpec(lastGroupClassName)
 
-            fileSpec.writeToWithCopyright(outputSrcDirectory)
+            fileSpec.writeTo(outputSrcDirectory)
         }
     }
 }

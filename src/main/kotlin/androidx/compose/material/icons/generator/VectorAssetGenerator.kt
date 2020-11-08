@@ -19,12 +19,7 @@ package androidx.compose.material.icons.generator
 import androidx.compose.material.icons.generator.vector.FillType
 import androidx.compose.material.icons.generator.vector.Vector
 import androidx.compose.material.icons.generator.vector.VectorNode
-import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.buildCodeBlock
+import com.squareup.kotlinpoet.*
 import java.util.Locale
 
 /**
@@ -39,8 +34,9 @@ import java.util.Locale
  * @param vector the parsed vector to generate VectorAssetBuilder commands for
  */
 class VectorAssetGenerator(
+    private val applicationIconPackage: String,
     private val iconName: String,
-    private val iconTheme: IconTheme,
+    private val iconGroup: String,
     private val vector: Vector
 ) {
     /**
@@ -50,10 +46,9 @@ class VectorAssetGenerator(
      * The package name and hence file location of the generated file is:
      * [PackageNames.MaterialIconsPackage] + [IconTheme.themePackageName].
      */
-    fun createFileSpec(): FileSpec {
-        val iconsPackage = PackageNames.MaterialIconsPackage.packageName
-        val themePackage = iconTheme.themePackageName
-        val combinedPackageName = "$iconsPackage.$themePackage"
+    fun createFileSpec(groupClassName: ClassName): FileSpec {
+        val iconGroupPackage = iconGroup.replace("/", ".").toLowerCase()
+        val combinedPackageName = "$applicationIconPackage.$iconGroupPackage"
         // Use a unique property name for the private backing property. This is because (as of
         // Kotlin 1.4) each property with the same name will be considered as a possible candidate
         // for resolution, regardless of the access modifier, so by using unique names we reduce
@@ -66,7 +61,7 @@ class VectorAssetGenerator(
             fileName = iconName
         ).addProperty(
             PropertySpec.builder(name = iconName, type = ClassNames.VectorAsset)
-                .receiver(iconTheme.className)
+                .receiver(groupClassName)
                 .getter(iconGetter(backingProperty))
                 .build()
         ).addProperty(

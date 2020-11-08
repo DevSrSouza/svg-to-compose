@@ -57,10 +57,6 @@ class IconProcessor(
     fun process(): List<Icon> {
         val icons = loadIcons()
 
-        ensureIconsExistInAllThemes(icons)
-        writeApiFile(icons, generatedApiFile)
-        checkApi(expectedApiFile, generatedApiFile)
-
         return icons
     }
 
@@ -82,7 +78,6 @@ class IconProcessor(
                 Icon(
                     kotlinName = kotlinName,
                     xmlFileName = xmlName,
-                    theme = theme,
                     fileContent = processXmlFile(file.readText())
                 )
             }
@@ -106,71 +101,11 @@ private fun processXmlFile(fileContent: String): String {
 }
 
 /**
- * Ensures that each icon in each theme is available in every other theme
- */
-private fun ensureIconsExistInAllThemes(icons: List<Icon>) {
-    val groupedIcons = icons.groupBy { it.theme }
-
-    check(groupedIcons.keys.containsAll(IconTheme.values().toList())) {
-        "Some themes were missing from the generated icons"
-    }
-
-    val expectedIconNames = groupedIcons.values.map { themeIcons ->
-        themeIcons.map { icon -> icon.kotlinName }
-    }
-
-    expectedIconNames.first().let { expected ->
-        expectedIconNames.forEach { actual ->
-            check(actual == expected) {
-                "Not all icons were found in all themes"
-            }
-        }
-    }
-}
-
-/**
- * Writes an API representation of [icons] to [file].
- */
-private fun writeApiFile(icons: List<Icon>, file: File) {
-    val apiText = icons
-        .groupBy { it.theme }
-        .map { (theme, themeIcons) ->
-            themeIcons
-                .map { icon ->
-                    theme.themeClassName + "." + icon.kotlinName
-                }
-                .sorted()
-                .joinToString(separator = "\n")
-        }
-        .sorted()
-        .joinToString(separator = "\n")
-
-    file.writeText(apiText)
-}
-
-/**
- * Ensures that [generatedFile] matches the checked-in API surface in [expectedFile].
- */
-private fun checkApi(expectedFile: File, generatedFile: File) {
-    check(expectedFile.exists()) {
-        "API file at ${expectedFile.canonicalPath} does not exist!"
-    }
-
-    check(expectedFile.readText() == generatedFile.readText()) {
-        """Found differences when comparing API files!
-                |Please check the difference and copy over the changes if intended.
-                |expected file: ${expectedFile.canonicalPath}
-                |generated file: ${generatedFile.canonicalPath}
-            """.trimMargin()
-    }
-}
-
-/**
  * Converts a snake_case name to a KotlinProperty name.
  *
  * If the first character of [this] is a digit, the resulting name will be prefixed with an `_`
  */
-private fun String.toKotlinPropertyName(): String {
+internal fun String.toKotlinPropertyName(): String {
     return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, this).let { name ->
         if (name.first().isDigit()) "_$name" else name
     }
