@@ -3,12 +3,19 @@ package androidx.compose.material.icons.generator
 import com.squareup.kotlinpoet.*
 import java.io.File
 
-class IconGroupWriter(
+data class IconGroupGenerationResult(
+    val firstGroup: ClassName,
+    val lastGroup: ClassName,
+    val firstGroupFileSpec: FileSpec.Builder,
+    val fileSpecs: List<FileSpec.Builder>
+)
+
+class IconGroupGenerator(
     private val applicationIconPackage: String,
     private val iconGroup: String,
 ) {
     // writeTo to source directory and return the last group for the Icons
-    fun writeTo(
+    /*fun writeTo(
         outputSrcDirectory: File
     ): ClassName {
         val groups = createFileForGroups()
@@ -17,10 +24,10 @@ class IconGroupWriter(
         }
 
         return groups.first
-    }
+    }*/
 
     // ClassName = Last Group
-    private fun createFileForGroups(): Pair<ClassName, List<FileSpec>> {
+    fun createFileSpecsForGroups(): IconGroupGenerationResult {
         val groups = iconGroup.split("/")
 
         val firstGroup = createGroup(null, groups.first())
@@ -30,13 +37,23 @@ class IconGroupWriter(
                 createGroup(previous.second, group)
             }
 
-            return subGroups.last().second to subGroups.map { it.first } + firstGroup.first
+            return IconGroupGenerationResult(
+                firstGroup.second,
+                subGroups.last().second,
+                firstGroup.first,
+                subGroups.map { it.first } + firstGroup.first
+            )
         } else {
-            return firstGroup.second to listOf(firstGroup.first)
+            return IconGroupGenerationResult(
+                firstGroup.second,
+                firstGroup.second,
+                firstGroup.first,
+                listOf(firstGroup.first)
+            )
         }
     }
 
-    private fun createGroup(previousGroupObject: ClassName?, group: String): Pair<FileSpec, ClassName> {
+    private fun createGroup(previousGroupObject: ClassName?, group: String): Pair<FileSpec.Builder, ClassName> {
         val iconGroupPackage = applicationIconPackage
 
         val objectName = "${group}${if(previousGroupObject != null) "Group" else ""}"
@@ -57,7 +74,6 @@ class IconGroupWriter(
                         .build()
                     )
                 }
-            }
-            .build() to createdObjectClassName
+            } to createdObjectClassName
     }
 }

@@ -1,0 +1,31 @@
+package androidx.compose.material.icons.generator
+
+import androidx.compose.material.icons.generator.util.backingPropertySpec
+import androidx.compose.material.icons.generator.util.withBackingProperty
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+
+class AllIconAccessorGenerator(
+    private val iconProperties: List<MemberName>,
+    private val accessClass: ClassName
+) {
+    fun createPropertySpec(): List<PropertySpec> {
+        val list = (List::class).asClassName()
+
+        val allIconsType = list.parameterizedBy(ClassNames.VectorAsset)
+        val allIconsBackingProperty = backingPropertySpec("_allIcons", allIconsType)
+
+        val allIconsParameters = iconProperties.map { "%M" }
+        val parameters = allIconsParameters.joinToString(prefix = "(", postfix = ")")
+        val allIconProperty = PropertySpec.builder("AllIcons", allIconsType)
+            .receiver(accessClass)
+            .getter(FunSpec.getterBuilder().withBackingProperty(allIconsBackingProperty) {
+                addStatement("%N= listOf$parameters", allIconsBackingProperty, *iconProperties.toTypedArray())
+            }.build())
+            .build()
+
+        return listOf(
+            allIconsBackingProperty, allIconProperty
+        )
+    }
+}

@@ -17,6 +17,7 @@
 package androidx.compose.material.icons.generator
 
 import br.com.devsrsouza.svg2compose.IconNameTransformer
+import com.squareup.kotlinpoet.MemberName
 import java.io.File
 
 typealias IconGroup = String
@@ -46,27 +47,48 @@ class IconWriter(
         // generating objects related to iconGroup
         val groups = icons.map { it.first }.distinct()
             .associateWith {
-                val groupWriter = IconGroupWriter(applicationIconPackage, it)
-                val lastGroupClassName = groupWriter.writeTo(outputSrcDirectory)
+                val groupWriter = IconGroupGenerator(applicationIconPackage, it)
+                val result = groupWriter.createFileSpecsForGroups()
 
-                lastGroupClassName
+                result
             }
 
-        icons.forEach { (group, icon) ->
+        val generatedIconsProperties = icons.filter { (group, icon) ->
             val iconName = icon.kotlinName.trim()
 
-            if (!iconNamePredicate(iconName)) return@forEach
+            iconNamePredicate(iconName)
+        }.map { (group, icon) ->
+            val iconName = icon.kotlinName.trim()
 
             val vector = IconParser(icon).parse()
 
-            val fileSpec = VectorAssetGenerator(
+            val (fileSpec, accessProperty) = VectorAssetGenerator(
                 applicationIconPackage,
                 iconNameTransformer(iconName, group),
                 group,
                 vector
-            ).createFileSpec(groups[group]!!)
+            ).createFileSpec(groups[group]!!.lastGroup)
 
             fileSpec.writeTo(outputSrcDirectory)
+
+            MemberName(fileSpec.packageName, accessProperty)
+        }
+
+        val groupResult = groups.values.first()
+        val accessorGroupFileSpec = groupResult.firstGroupFileSpec
+        val accessorGroupMember = groupResult.firstGroup
+
+        val allIconAccessor = AllIconAccessorGenerator(
+            generatedIconsProperties,
+            accessorGroupMember
+        )
+
+        for (propertySpec in allIconAccessor.createPropertySpec()) {
+            accessorGroupFileSpec.addProperty(propertySpec)
+        }
+
+        for (fileSpec in groupResult.fileSpecs) {
+            fileSpec.build().writeTo(outputSrcDirectory)
         }
     }
 }

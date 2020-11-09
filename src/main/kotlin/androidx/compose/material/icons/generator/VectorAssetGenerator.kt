@@ -16,11 +16,16 @@
 
 package androidx.compose.material.icons.generator
 
-import androidx.compose.material.icons.generator.vector.FillType
+import androidx.compose.material.icons.generator.util.backingPropertySpec
+import androidx.compose.material.icons.generator.util.withBackingProperty
 import androidx.compose.material.icons.generator.vector.Vector
 import androidx.compose.material.icons.generator.vector.VectorNode
 import com.squareup.kotlinpoet.*
 import java.util.Locale
+
+data class VectorAssetGenerationResult(
+    val sourceGeneration: FileSpec, val accessProperty: String
+)
 
 /**
  * Generator for creating a Kotlin source file with a VectorAsset property for the given [vector],
@@ -46,7 +51,7 @@ class VectorAssetGenerator(
      * The package name and hence file location of the generated file is:
      * [PackageNames.MaterialIconsPackage] + [IconTheme.themePackageName].
      */
-    fun createFileSpec(groupClassName: ClassName): FileSpec {
+    fun createFileSpec(groupClassName: ClassName): VectorAssetGenerationResult {
         val iconGroupPackage = iconGroup.replace("/", ".").toLowerCase()
         val combinedPackageName = "$applicationIconPackage.$iconGroupPackage"
         // Use a unique property name for the private backing property. This is because (as of
@@ -55,8 +60,9 @@ class VectorAssetGenerator(
         // the size from ~6000 to 1, and speed up compilation time for these icons.
         @OptIn(ExperimentalStdlibApi::class)
         val backingPropertyName = "_" + iconName.decapitalize(Locale.ROOT)
-        val backingProperty = backingProperty(name = backingPropertyName)
-        return FileSpec.builder(
+        val backingProperty = backingPropertySpec(name = backingPropertyName, ClassNames.VectorAsset)
+
+        val generation = FileSpec.builder(
             packageName = combinedPackageName,
             fileName = iconName
         ).addProperty(
@@ -67,6 +73,8 @@ class VectorAssetGenerator(
         ).addProperty(
             backingProperty
         ).setIndent().build()
+
+        return VectorAssetGenerationResult(generation, iconName)
     }
 
     /**
@@ -95,39 +103,22 @@ class VectorAssetGenerator(
         ).toTypedArray()
 
         return FunSpec.getterBuilder()
-            .addCode(buildCodeBlock {
-                beginControlFlow("if (%N != null)", backingProperty)
-                addStatement("return %N!!", backingProperty)
-                endControlFlow()
-            })
-            .addCode(buildCodeBlock {
-                beginControlFlow(
-                    "%N = %M$parameters.apply",
-                    backingProperty,
-                    *members
-                )
-                vector.nodes.forEach { node -> addRecursively(node) }
-                endControlFlow()
-                addStatement(".build()")
-            })
-            .addStatement("return %N!!", backingProperty)
+            .withBackingProperty(backingProperty) {
+                addCode(buildCodeBlock {
+                    beginControlFlow(
+                        "%N = %M$parameters.apply",
+                        backingProperty,
+                        *members
+                    )
+                    vector.nodes.forEach { node -> addRecursively(node) }
+                    endControlFlow()
+                    addStatement(".build()")
+                })
+            }
             .build()
     }
 
-    /**
-     * @return The private backing property that is used to cache the VectorAsset for a given
-     * icon once created.
-     *
-     * @param name the name of this property
-     */
-    private fun backingProperty(name: String): PropertySpec {
-        val nullableVectorAsset = ClassNames.VectorAsset.copy(nullable = true)
-        return PropertySpec.builder(name = name, type = nullableVectorAsset)
-            .mutable()
-            .addModifiers(KModifier.PRIVATE)
-            .initializer("null")
-            .build()
-    }
+
 }
 
 /**
