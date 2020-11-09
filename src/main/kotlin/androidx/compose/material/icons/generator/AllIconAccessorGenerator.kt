@@ -13,11 +13,11 @@ class AllIconAccessorGenerator(
         val list = (List::class).asClassName()
 
         val allIconsType = list.parameterizedBy(ClassNames.VectorAsset)
-        val allIconsBackingProperty = backingPropertySpec("_allIcons", allIconsType)
+        val allIconsBackingProperty = backingPropertySpec("_allAssets", allIconsType)
 
         val allIconsParameters = iconProperties.map { "%M" }
         val parameters = allIconsParameters.joinToString(prefix = "(", postfix = ")")
-        val allIconProperty = PropertySpec.builder("AllIcons", allIconsType)
+        val allIconProperty = PropertySpec.builder("AllAssets", allIconsType)
             .receiver(accessClass)
             .getter(FunSpec.getterBuilder().withBackingProperty(allIconsBackingProperty) {
                 addStatement("%N= listOf$parameters", allIconsBackingProperty, *iconProperties.toTypedArray())

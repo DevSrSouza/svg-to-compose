@@ -1,4 +1,4 @@
-# SVG to Compose
+# SVG to Compose [Experimental]
 
 Converts SVG or Android Vector Drawable to Compose code.
 
