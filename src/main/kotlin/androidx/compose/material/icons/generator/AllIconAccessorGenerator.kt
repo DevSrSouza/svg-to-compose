@@ -18,7 +18,7 @@ class AllIconAccessorGenerator(
         val allIconsBackingProperty = backingPropertySpec("__$allAssetsPropertyName", allIconsType)
 
         iconProperties.find { it.simpleName == accessClass.simpleName }?.let {
-            fileSpec.addAliasedImport(it, "___$it")
+            fileSpec.addAliasedImport(it, "___${it.simpleName}")
         }
 
         val allIconsParameters = iconProperties.map { "%M" }
