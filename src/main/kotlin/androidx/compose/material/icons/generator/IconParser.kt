@@ -147,11 +147,17 @@ private fun XmlPullParser.seekToStartTag(): XmlPullParser {
 private fun XmlPullParser.isAtEnd() =
     eventType == END_DOCUMENT || (depth < 1 && eventType == END_TAG)
 
+private val hexRegex = "^[0-9a-fA-F]{6,8}".toRegex()
+
 private fun String.toHexColor(): String? {
     return removePrefix("#")
         .let {
-            if(it.length > 6) it
-            else "FF$it"
+            if(hexRegex.matches(it)) {
+                if (it.length > 6) it
+                else "FF$it"
+            } else {
+                "FF000000"
+            }
         }
 }
 
