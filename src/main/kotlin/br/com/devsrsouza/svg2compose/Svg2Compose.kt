@@ -25,7 +25,8 @@ object Svg2Compose {
         outputSourceDirectory: File,
         vectorsDirectory: File,
         type: VectorType = VectorType.SVG,
-        iconNameTransformer: IconNameTransformer = { it, _ -> it }
+        iconNameTransformer: IconNameTransformer = { it, _ -> it },
+        allAssetsPropertyName: String = "AllAssets"
     ) {
         val drawableDir = drawableTempDirectory()
         val depthFiles = vectorsDirectory.walkTopDown()
@@ -66,7 +67,8 @@ object Svg2Compose {
         val writer = IconWriter(
             applicationIconPackage,
             icons,
-            iconNameTransformer
+            iconNameTransformer,
+            allAssetsPropertyName
         )
 
         writer.generateTo(outputSourceDirectory) { true }

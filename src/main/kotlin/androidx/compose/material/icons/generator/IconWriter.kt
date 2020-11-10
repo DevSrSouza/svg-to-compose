@@ -30,7 +30,8 @@ typealias IconGroup = String
 class IconWriter(
     private val applicationIconPackage: String,
     private val icons: List<Pair<IconGroup, Icon>>,
-    private val iconNameTransformer: IconNameTransformer
+    private val iconNameTransformer: IconNameTransformer,
+    private val allAssetsPropertyName: String
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -80,7 +81,8 @@ class IconWriter(
 
         val allIconAccessor = AllIconAccessorGenerator(
             generatedIconsProperties,
-            accessorGroupMember
+            accessorGroupMember,
+            allAssetsPropertyName
         )
 
         for (propertySpec in allIconAccessor.createPropertySpec(accessorGroupFileSpec)) {
