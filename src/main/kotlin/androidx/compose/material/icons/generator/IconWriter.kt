@@ -83,7 +83,7 @@ class IconWriter(
             accessorGroupMember
         )
 
-        for (propertySpec in allIconAccessor.createPropertySpec()) {
+        for (propertySpec in allIconAccessor.createPropertySpec(accessorGroupFileSpec)) {
             accessorGroupFileSpec.addProperty(propertySpec)
         }
 

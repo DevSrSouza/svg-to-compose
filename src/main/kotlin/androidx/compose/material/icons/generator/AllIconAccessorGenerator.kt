@@ -9,8 +9,9 @@ class AllIconAccessorGenerator(
     private val iconProperties: List<MemberName>,
     private val accessClass: ClassName
 ) {
-    fun createPropertySpec(): List<PropertySpec> {
+    fun createPropertySpec(fileSpec: FileSpec.Builder): List<PropertySpec> {
         val list = (List::class).asClassName()
+        fileSpec.addAliasedImport(list, "____KtList")
 
         val allIconsType = list.parameterizedBy(ClassNames.VectorAsset)
         val allIconsBackingProperty = backingPropertySpec("_allAssets", allIconsType)
