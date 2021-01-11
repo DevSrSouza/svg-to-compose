@@ -17,6 +17,7 @@
 package androidx.compose.material.icons.generator
 
 import br.com.devsrsouza.svg2compose.IconNameTransformer
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.MemberName
 import java.io.File
 
@@ -28,10 +29,11 @@ typealias IconGroup = String
  * @property icons the list of [Icon]s to generate Kotlin files for
  */
 class IconWriter(
-    private val applicationIconPackage: String,
-    private val icons: List<Pair<IconGroup, Icon>>,
-    private val iconNameTransformer: IconNameTransformer,
-    private val allAssetsPropertyName: String
+    private val icons: List<Icon>,
+    private val groupClass: ClassName,
+    private val groupPackage: String,
+    private val groupName: String,
+    private val iconNameTransformer: IconNameTransformer
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -40,57 +42,32 @@ class IconWriter(
      * @param outputSrcDirectory the directory to generate source files in
      * @param iconNamePredicate the predicate that filters what icons should be generated. If
      * false, the icon will not be parsed and generated in [outputSrcDirectory].
+     *
+     * @return MemberName of the created icons
      */
     fun generateTo(
         outputSrcDirectory: File,
         iconNamePredicate: (String) -> Boolean
-    ) {
-        // generating objects related to iconGroup
-        val groups = icons.map { it.first }.distinct()
-            .associateWith {
-                val groupWriter = IconGroupGenerator(applicationIconPackage, it)
-                val result = groupWriter.createFileSpecsForGroups()
+    ): List<MemberName> {
 
-                result
-            }
-
-        val generatedIconsProperties = icons.filter { (group, icon) ->
+        return icons.filter { icon ->
             val iconName = icon.kotlinName.trim()
 
             iconNamePredicate(iconName)
-        }.map { (group, icon) ->
+        }.map { icon ->
             val iconName = icon.kotlinName.trim()
 
             val vector = IconParser(icon).parse()
 
             val (fileSpec, accessProperty) = VectorAssetGenerator(
-                applicationIconPackage,
-                iconNameTransformer(iconName, group),
-                group,
+                iconNameTransformer(iconName, groupName),
+                groupPackage,
                 vector
-            ).createFileSpec(groups[group]!!.lastGroup)
+            ).createFileSpec(groupClass)
 
             fileSpec.writeTo(outputSrcDirectory)
 
             MemberName(fileSpec.packageName, accessProperty)
-        }
-
-        val groupResult = groups.values.first()
-        val accessorGroupFileSpec = groupResult.firstGroupFileSpec
-        val accessorGroupMember = groupResult.firstGroup
-
-        val allIconAccessor = AllIconAccessorGenerator(
-            generatedIconsProperties,
-            accessorGroupMember,
-            allAssetsPropertyName
-        )
-
-        for (propertySpec in allIconAccessor.createPropertySpec(accessorGroupFileSpec)) {
-            accessorGroupFileSpec.addProperty(propertySpec)
-        }
-
-        for (fileSpec in groupResult.fileSpecs) {
-            fileSpec.build().writeTo(outputSrcDirectory)
         }
     }
 }

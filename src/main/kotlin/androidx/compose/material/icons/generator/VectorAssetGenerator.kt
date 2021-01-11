@@ -39,9 +39,8 @@ data class VectorAssetGenerationResult(
  * @param vector the parsed vector to generate VectorAssetBuilder commands for
  */
 class VectorAssetGenerator(
-    private val applicationIconPackage: String,
     private val iconName: String,
-    private val iconGroup: String,
+    private val iconGroupPackage: String,
     private val vector: Vector
 ) {
     /**
@@ -52,8 +51,6 @@ class VectorAssetGenerator(
      * [PackageNames.MaterialIconsPackage] + [IconTheme.themePackageName].
      */
     fun createFileSpec(groupClassName: ClassName): VectorAssetGenerationResult {
-        val iconGroupPackage = iconGroup.replace("/", ".").toLowerCase()
-        val combinedPackageName = "$applicationIconPackage.$iconGroupPackage"
         // Use a unique property name for the private backing property. This is because (as of
         // Kotlin 1.4) each property with the same name will be considered as a possible candidate
         // for resolution, regardless of the access modifier, so by using unique names we reduce
@@ -63,7 +60,7 @@ class VectorAssetGenerator(
         val backingProperty = backingPropertySpec(name = backingPropertyName, ClassNames.VectorAsset)
 
         val generation = FileSpec.builder(
-            packageName = combinedPackageName,
+            packageName = iconGroupPackage,
             fileName = iconName
         ).addProperty(
             PropertySpec.builder(name = iconName, type = ClassNames.VectorAsset)

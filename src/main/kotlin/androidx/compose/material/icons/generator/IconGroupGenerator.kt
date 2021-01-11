@@ -3,72 +3,31 @@ package androidx.compose.material.icons.generator
 import com.squareup.kotlinpoet.*
 import java.io.File
 
-data class IconGroupGenerationResult(
-    val firstGroup: ClassName,
-    val lastGroup: ClassName,
-    val firstGroupFileSpec: FileSpec.Builder,
-    val fileSpecs: List<FileSpec.Builder>
-)
-
 class IconGroupGenerator(
-    private val applicationIconPackage: String,
-    private val iconGroup: String,
+    private val groupPackage: String,
+    private val groupName: String
 ) {
-    // writeTo to source directory and return the last group for the Icons
-    /*fun writeTo(
-        outputSrcDirectory: File
-    ): ClassName {
-        val groups = createFileForGroups()
-        for (groupFileSpec in groups.second) {
-            groupFileSpec.writeTo(outputSrcDirectory)
-        }
 
-        return groups.first
-    }*/
-
-    // ClassName = Last Group
-    fun createFileSpecsForGroups(): IconGroupGenerationResult {
-        val groups = iconGroup.split("/")
-
-        val firstGroup = createGroup(null, groups.first())
-
-        if (groups.size > 1) {
-            val subGroups = groups.slice(1 until groups.size).scan(firstGroup) { previous, group ->
-                createGroup(previous.second, group)
-            }
-
-            return IconGroupGenerationResult(
-                firstGroup.second,
-                subGroups.last().second,
-                firstGroup.first,
-                subGroups.map { it.first } + firstGroup.first
-            )
-        } else {
-            return IconGroupGenerationResult(
-                firstGroup.second,
-                firstGroup.second,
-                firstGroup.first,
-                listOf(firstGroup.first)
-            )
-        }
+    fun createFileSpec(previousGroupObject: ClassName?): Pair<FileSpec.Builder, ClassName> {
+        return createGroup(previousGroupObject)
     }
 
-    private fun createGroup(previousGroupObject: ClassName?, group: String): Pair<FileSpec.Builder, ClassName> {
-        val iconGroupPackage = applicationIconPackage
-
-        val objectName = "${group}${if(previousGroupObject != null) "Group" else ""}"
+    private fun createGroup(previousGroupObject: ClassName?): Pair<FileSpec.Builder, ClassName> {
+        // if there is not previous group object, is suppose that this group is the root group
+        // if is the root group, it should not prefix with "Group"
+        val objectName = "${groupName}${if(previousGroupObject != null) "Group" else ""}"
 
         val objectSpec = TypeSpec.objectBuilder(objectName).build()
-        val createdObjectClassName = ClassName(iconGroupPackage, objectName)
+        val createdObjectClassName = ClassName(groupPackage, objectName)
 
         return FileSpec.builder(
-            packageName = iconGroupPackage,
-            fileName = group
+            packageName = groupPackage,
+            fileName = "__$groupName"
         )
             .addType(objectSpec)
             .apply {
                 if(previousGroupObject != null) {
-                    addProperty(PropertySpec.builder(group, createdObjectClassName)
+                    addProperty(PropertySpec.builder(groupName, createdObjectClassName)
                         .receiver(previousGroupObject)
                         .getter(FunSpec.getterBuilder().addStatement("return $objectName").build())
                         .build()
