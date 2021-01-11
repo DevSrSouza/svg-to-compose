@@ -39,7 +39,6 @@ object Svg2Compose {
         vectorsDirectory.walkTopDown()
             .maxDepth(10)
             .onEnter {
-                println(it)
                 val dirIcons = it.listFiles()
                     .filter { !it.isDirectory }
                     .filter { it.extension.equals(type.extension, ignoreCase = true) }
@@ -48,9 +47,9 @@ object Svg2Compose {
 
                 // if there is no previous group, this is the root dir, and the group name should be the accessorName
                 val groupName = if(previousGroup == null) accessorName else it.name.toKotlinPropertyName()
-                val groupPackageName = groupName.toLowerCase()
-                val groupPackage = previousGroup?.groupPackage?.let { groupPkg -> "$groupPkg.${groupPackageName}" }
-                    ?: "$applicationIconPackage.${groupPackageName}"
+                val groupPackage = previousGroup?.let { group -> "${group.groupPackage}.${group.groupName.toLowerCase()}" }
+                    ?: "$applicationIconPackage"
+                val iconsPackage = "$groupPackage.${groupName.toLowerCase()}"
 
                 val (groupFileSpec, groupClassName) = IconGroupGenerator(
                     groupPackage,
@@ -84,7 +83,7 @@ object Svg2Compose {
                     val writer = IconWriter(
                         icons,
                         groupClassName,
-                        groupPackage,
+                        iconsPackage,
                         groupName,
                         iconNameTransformer
                     )

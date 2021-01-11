@@ -2,11 +2,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.4.10"
-    maven
+    id("maven-publish")
 }
 
-group = "me.devsrsouza"
-version = "0.4.0-SNAPSHOT"
+group = "br.com.devsrsouza"
+version = "0.4.0"
 
 repositories {
     mavenCentral()
@@ -30,4 +30,12 @@ tasks.test {
 
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["kotlin"])
+        }
+    }
 }
