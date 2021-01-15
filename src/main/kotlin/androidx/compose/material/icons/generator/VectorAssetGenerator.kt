@@ -57,13 +57,13 @@ class VectorAssetGenerator(
         // the size from ~6000 to 1, and speed up compilation time for these icons.
         @OptIn(ExperimentalStdlibApi::class)
         val backingPropertyName = "_" + iconName.decapitalize(Locale.ROOT)
-        val backingProperty = backingPropertySpec(name = backingPropertyName, ClassNames.VectorAsset)
+        val backingProperty = backingPropertySpec(name = backingPropertyName, ClassNames.ImageVector)
 
         val generation = FileSpec.builder(
             packageName = iconGroupPackage,
             fileName = iconName
         ).addProperty(
-            PropertySpec.builder(name = iconName, type = ClassNames.VectorAsset)
+            PropertySpec.builder(name = iconName, type = ClassNames.ImageVector)
                 .receiver(groupClassName)
                 .getter(iconGetter(backingProperty))
                 .build()
@@ -94,7 +94,7 @@ class VectorAssetGenerator(
         val parameters = parameterList.joinToString(prefix = "(", postfix = ")")
 
         val members: Array<Any> = listOfNotNull(
-            MemberNames.VectorAssetBuilder,
+            MemberNames.ImageVectorBuilder,
             vector.width.memberName,
             vector.height.memberName
         ).toTypedArray()

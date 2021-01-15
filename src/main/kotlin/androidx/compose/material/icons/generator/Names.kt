@@ -34,7 +34,7 @@ enum class PackageNames(val packageName: String) {
  */
 object ClassNames {
     val Icons = PackageNames.MaterialIconsPackage.className("Icons")
-    val VectorAsset = PackageNames.VectorPackage.className("VectorAsset")
+    val ImageVector = PackageNames.VectorPackage.className("ImageVector")
     val PathFillType = PackageNames.GraphicsPackage.className("PathFillType")
     val StrokeCap = PackageNames.GraphicsPackage.className("StrokeCap")
     val StrokeJoin = PackageNames.GraphicsPackage.className("StrokeJoin")
@@ -44,7 +44,7 @@ object ClassNames {
  * [MemberName]s used for icon generation.
  */
 object MemberNames {
-    val VectorAssetBuilder = MemberName(PackageNames.VectorPackage.packageName, "VectorAssetBuilder")
+    val ImageVectorBuilder = MemberName(ClassNames.ImageVector, "Builder")
 
     val Path = MemberName(PackageNames.VectorPackage.packageName, "path")
 

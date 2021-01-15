@@ -3,9 +3,7 @@ package androidx.compose.material.icons.generator
 import androidx.compose.material.icons.generator.util.backingPropertySpec
 import androidx.compose.material.icons.generator.util.withBackingProperty
 import br.com.devsrsouza.svg2compose.GeneratedGroup
-import br.com.devsrsouza.svg2compose.Svg2Compose
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
 class AllIconAccessorGenerator(
@@ -21,7 +19,7 @@ class AllIconAccessorGenerator(
         // preventing that a asset has the name List and conflict with Kotlin List import
         fileSpec.addAliasedImport(list, "____KtList")
 
-        val allIconsType = list.parameterizedBy(ClassNames.VectorAsset)
+        val allIconsType = list.parameterizedBy(ClassNames.ImageVector)
         val allIconsBackingProperty = backingPropertySpec("__$allAssetsPropertyName", allIconsType)
 
         // preventing import conflict when different groups has the same asset name.
