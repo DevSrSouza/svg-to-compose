@@ -4,7 +4,17 @@ Converts SVG or Android Vector Drawable to Compose code.
 
 ### Why this project
 
-Currently [Compose for Desktop](https://www.jetbrains.com/lp/compose/) does not support SVG files and Android Vector Drawables. This also difficulties a migration of the App to Multiplatform (Desktop and Android).
+On the start of the [Compose for Desktop](https://www.jetbrains.com/lp/compose/) it does not support SVG files and Android Vector Drawables. This also difficulties a migration of the App to Multiplatform (Desktop and Android).
+Currently, it does support Android Vector Drawables in the Desktop allowing share your vectors. 
+
+### Use cases
+
+Now Compose for Desktop supports android vector drawables, this means that the first reason that the project was created does not apply anymore,
+this does not mean that it is not useful anymore.
+
+Use cases:
+- Manipulate dynamic an SVG file in code, you can generate and do source code modifications.
+- Create an Icon pack similar to how Material Icons works on Compose ([compose-icons](https://github.com/DevSrSouza/compose-icons) is build with SVG to Compose)
 
 ### How its work
 
@@ -35,10 +45,11 @@ val srcDir = File("src/main/kotlin")
 
 Svg2Compose.parse(
     applicationIconPackage = "assets",
-    accessorName = "jetnews_assets",
+    accessorName = "JetnewsAssets",
     outputSourceDirectory = srcDir,
     vectorsDirectory = assetsDir,
-    type = VectorType.DRAWABLE
+    type = VectorType.DRAWABLE,
+    allAssetsPropertyName = "AllAssets"
 )
 ```
 
@@ -68,14 +79,15 @@ val srcDir = File("src/main/kotlin")
 
 Svg2Compose.parse(
     applicationIconPackage = "assets",
-    accessorName = "linea_icons",
+    accessorName = "LineaIcons",
     outputSourceDirectory = srcDir,
     vectorsDirectory = assetsDir,
     type = VectorType.SVG,
-    // Linea icons uses the group in the file name like `Weather/weather_icon.svg`, so we can get the
-    // last group(dir) from the icon and remove it from the name
-    iconNameTransformer = { name, group -> name.removePrefix(group.split("/").last()) }
+    iconNameTransformer = { name, group -> name.removePrefix(group) },
+    allAssetsPropertyName = "AllIcons"
 )
 ```
 
 **Using in code**: `LineaIcons.Arrows.ButtonUp`
+
+The project also generate an accessor for all yours assets, for the given example, it should be `LineaIcons.AllIcons` and it also generated for child groups `LineaIcons.Arrows.AllIcons`
