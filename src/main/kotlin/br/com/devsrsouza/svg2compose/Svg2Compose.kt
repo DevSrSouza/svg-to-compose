@@ -1,7 +1,6 @@
 package br.com.devsrsouza.svg2compose
 
 import androidx.compose.material.icons.generator.*
-import androidx.compose.material.icons.generator.toKotlinPropertyName
 import com.android.ide.common.vectordrawable.Svg2Vector
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
@@ -29,7 +28,7 @@ object Svg2Compose {
         type: VectorType = VectorType.SVG,
         iconNameTransformer: IconNameTransformer = { it, _ -> it },
         allAssetsPropertyName: String = "AllAssets"
-    ) {
+    ): ParsingResult {
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
 
         val drawableDir = drawableTempDirectory()
@@ -40,14 +39,14 @@ object Svg2Compose {
             .maxDepth(10)
             .onEnter {
                 val dirIcons = it.listFiles()
-                    .filter { !it.isDirectory }
+                    .filter { it.isDirectory.not() }
                     .filter { it.extension.equals(type.extension, ignoreCase = true) }
 
                 val previousGroup = groupStack.peekOrNull()
 
                 // if there is no previous group, this is the root dir, and the group name should be the accessorName
                 val groupName = if(previousGroup == null) accessorName else it.name.toKotlinPropertyName()
-                val groupPackage = previousGroup?.let { group -> "${group.groupPackage}.${group.groupName.toLowerCase()}" }
+                val groupPackage = previousGroup?.let { group -> "${group.groupPackage}.${group.groupName.second.toLowerCase()}" }
                     ?: "$applicationIconPackage"
                 val iconsPackage = "$groupPackage.${groupName.toLowerCase()}"
 
@@ -57,45 +56,51 @@ object Svg2Compose {
                 ).createFileSpec(previousGroup?.groupClass)
 
 
-                val generatedIconsMemberNames = if(dirIcons.isNotEmpty()) {
-                    val drawables: List<File> = when (type) {
-                        VectorType.SVG -> dirIcons.map {
-                            val iconName = nameRelative(it).withoutExtension
+                val generatedIconsMemberNames: Map<VectorFile, MemberName> =
+                    if(dirIcons.isNotEmpty()) {
+                        val drawables: List<Pair<File, File>> = when (type) {
+                            VectorType.SVG -> dirIcons.map {
+                                val iconName = nameRelative(it).withoutExtension
 
-                            val parsedFile = File(drawableDir, "${iconName}.xml")
-                            parsedFile.parentFile.mkdirs()
+                                val parsedFile = File(drawableDir, "${iconName}.xml")
+                                parsedFile.parentFile.mkdirs()
 
-                            Svg2Vector.parseSvgToXml(it, parsedFile.outputStream())
+                                Svg2Vector.parseSvgToXml(it, parsedFile.outputStream())
 
-                            parsedFile
-                        }.toList()
-                        VectorType.DRAWABLE -> dirIcons.toList()
-                    }
+                                it to parsedFile
+                            }.toList()
+                            VectorType.DRAWABLE -> dirIcons.toList().map { it to it }
+                        }
 
-                    val icons = drawables.map {
-                        Icon(
-                            it.nameWithoutExtension.toKotlinPropertyName(),
-                            it.name,
-                            it.readText()
+                        val icons: Map<VectorFile, Icon> = drawables.associate { (vectorFile, drawableFile) ->
+                            vectorFile to Icon(
+                                iconNameTransformer(
+                                    drawableFile.nameWithoutExtension.toKotlinPropertyName().trim(),
+                                    groupName
+                                ),
+                                drawableFile.name,
+                                drawableFile.readText()
+                            )
+                        }
+
+                        val writer = IconWriter(
+                            icons.values,
+                            groupClassName,
+                            iconsPackage,
                         )
+
+                        val memberNames = writer.generateTo(outputSourceDirectory) { true }
+
+                        icons.mapValues { entry ->
+                            memberNames.first { it.simpleName == entry.value.kotlinName }
+                        }
+                    } else {
+                        emptyMap<VectorFile, MemberName>()
                     }
-
-                    val writer = IconWriter(
-                        icons,
-                        groupClassName,
-                        iconsPackage,
-                        groupName,
-                        iconNameTransformer
-                    )
-
-                    writer.generateTo(outputSourceDirectory) { true }
-                } else {
-                    emptyList<MemberName>()
-                }
 
                 val result = GeneratedGroup(
                     groupPackage,
-                    groupName,
+                    it to groupName,
                     generatedIconsMemberNames,
                     groupClassName,
                     groupFileSpec,
@@ -112,10 +117,13 @@ object Svg2Compose {
                 true
             }
             .onLeave {
-                val group = groupStack.pop()
+                val group = if(groupStack.size > 1)
+                    groupStack.pop()
+                else
+                    groupStack.peek()
 
                 val allAssetsGenerator = AllIconAccessorGenerator(
-                    group.generatedIconsMemberNames,
+                    group.generatedIconsMemberNames.values,
                     group.groupClass,
                     allAssetsPropertyName,
                     group.childGroups
@@ -128,6 +136,8 @@ object Svg2Compose {
                 group.groupFileSpec.build().writeTo(outputSourceDirectory)
             }
             .toList() // consume, to onEnter and onLeave be triggered
+
+        return groupStack.pop().asParsingResult()
     }
 
     private fun drawableTempDirectory() = createTempDir(suffix = "svg2compose/")
@@ -135,11 +145,26 @@ object Svg2Compose {
     private val String.withoutExtension get() = substringBeforeLast(".")
 }
 
+typealias GroupFolder = File
+typealias VectorFile = File
+
 data class GeneratedGroup(
     val groupPackage: String,
-    val groupName: String,
-    val generatedIconsMemberNames: List<MemberName>,
+    val groupName: Pair<GroupFolder, String>,
+    val generatedIconsMemberNames: Map<VectorFile, MemberName>,
     val groupClass: ClassName,
     val groupFileSpec: FileSpec.Builder,
     val childGroups: List<GeneratedGroup>
+)
+
+data class ParsingResult(
+    val groupName: Pair<GroupFolder, String>,
+    val generatedIconsMemberNames: Map<VectorFile, MemberName>,
+    val generatedGroups: List<ParsingResult>
+)
+
+private fun GeneratedGroup.asParsingResult(): ParsingResult = ParsingResult(
+    groupName = groupName,
+    generatedIconsMemberNames = generatedIconsMemberNames,
+    generatedGroups = childGroups.map { it.asParsingResult() },
 )

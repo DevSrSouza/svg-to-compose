@@ -29,11 +29,9 @@ typealias IconGroup = String
  * @property icons the list of [Icon]s to generate Kotlin files for
  */
 class IconWriter(
-    private val icons: List<Icon>,
+    private val icons: Collection<Icon>,
     private val groupClass: ClassName,
     private val groupPackage: String,
-    private val groupName: String,
-    private val iconNameTransformer: IconNameTransformer
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -51,16 +49,16 @@ class IconWriter(
     ): List<MemberName> {
 
         return icons.filter { icon ->
-            val iconName = icon.kotlinName.trim()
+            val iconName = icon.kotlinName
 
             iconNamePredicate(iconName)
         }.map { icon ->
-            val iconName = icon.kotlinName.trim()
+            val iconName = icon.kotlinName
 
             val vector = IconParser(icon).parse()
 
             val (fileSpec, accessProperty) = VectorAssetGenerator(
-                iconNameTransformer(iconName, groupName),
+                iconName,
                 groupPackage,
                 vector
             ).createFileSpec(groupClass)

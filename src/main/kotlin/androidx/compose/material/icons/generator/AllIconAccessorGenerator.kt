@@ -7,7 +7,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
 class AllIconAccessorGenerator(
-    private val iconProperties: List<MemberName>,
+    private val iconProperties: Collection<MemberName>,
     private val accessClass: ClassName,
     private val allAssetsPropertyName: String,
     private val childGroups: List<GeneratedGroup>
@@ -58,6 +58,6 @@ class AllIconAccessorGenerator(
     }
 
     fun groupAllIconsMember(group: GeneratedGroup): MemberName {
-        return MemberName(group.groupPackage, group.groupName)
+        return MemberName(group.groupPackage, group.groupName.second)
     }
 }

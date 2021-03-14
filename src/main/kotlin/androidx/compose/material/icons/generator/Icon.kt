@@ -30,5 +30,5 @@ package androidx.compose.material.icons.generator
 data class Icon(
     val kotlinName: String,
     val xmlFileName: String,
-    val fileContent: String
+    val fileContent: String,
 )
