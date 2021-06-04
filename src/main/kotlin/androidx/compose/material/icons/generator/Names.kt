@@ -35,9 +35,9 @@ enum class PackageNames(val packageName: String) {
 object ClassNames {
     val Icons = PackageNames.MaterialIconsPackage.className("Icons")
     val ImageVector = PackageNames.VectorPackage.className("ImageVector")
-    val PathFillType = PackageNames.GraphicsPackage.className("PathFillType")
-    val StrokeCap = PackageNames.GraphicsPackage.className("StrokeCap")
-    val StrokeJoin = PackageNames.GraphicsPackage.className("StrokeJoin")
+    val PathFillType = PackageNames.GraphicsPackage.className("PathFillType", CompanionImportName)
+    val StrokeCap = PackageNames.GraphicsPackage.className("StrokeCap", CompanionImportName)
+    val StrokeJoin = PackageNames.GraphicsPackage.className("StrokeJoin", CompanionImportName)
 }
 
 /**
@@ -71,3 +71,5 @@ object MemberNames {
  * @return the [ClassName] of the given [classNames] inside this package.
  */
 fun PackageNames.className(vararg classNames: String) = ClassName(this.packageName, *classNames)
+
+private const val CompanionImportName = "Companion"
