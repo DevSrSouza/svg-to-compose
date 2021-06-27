@@ -7,20 +7,22 @@ fun main() {
     val src = File("build/generated-icons").apply { mkdirs()}
 
     Svg2Compose.parse(
-        "br.com.compose.icons",
-        "EvaIcons",
-        src,
-        iconTest,
-        iconNameTransformer = { name, group -> name.removeSuffix(group, ignoreCase = true) }
+        applicationIconPackage = "br.com.compose.icons",
+        accessorName = "EvaIcons",
+        outputSourceDirectory = src,
+        vectorsDirectory = iconTest,
+        iconNameTransformer = { name, group ->
+            name.removeSuffix(group, ignoreCase = true)
+        }
     )
 }
 
 private fun String.removeSuffix(suffix: String, ignoreCase: Boolean): String {
-    if(ignoreCase) {
+    return if(ignoreCase) {
         val index = lastIndexOf(suffix, ignoreCase = true)
 
-        return if(index > -1) substring(0, index) else this
+        if(index > -1) substring(0, index) else this
     } else {
-        return removeSuffix(suffix)
+        removeSuffix(suffix)
     }
 }
