@@ -4,7 +4,7 @@ import java.io.File
 
 fun main() {
     val iconTest = File("raw-icons4")
-    val src = File("build/generated-icons").apply { mkdirs()}
+    val src = File("build/generated-icons").apply { mkdirs() }
 
     Svg2Compose.parse(
         applicationIconPackage = "br.com.compose.icons",
