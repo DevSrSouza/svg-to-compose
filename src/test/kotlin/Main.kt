@@ -18,10 +18,10 @@ fun main() {
 }
 
 private fun String.removeSuffix(suffix: String, ignoreCase: Boolean): String {
-    return if(ignoreCase) {
+    return if (ignoreCase) {
         val index = lastIndexOf(suffix, ignoreCase = true)
 
-        if(index > -1) substring(0, index) else this
+        if (index > -1) substring(0, index) else this
     } else {
         removeSuffix(suffix)
     }
