@@ -188,15 +188,15 @@ private fun CodeBlock.Builder.addPath(
                 path.fill.colorStops.forEach { _ ->
                     add(++fillIndex, MemberNames.Color)
                 }
-                add(MemberNames.Offset)
-                add(MemberNames.Offset)
+                add(++fillIndex, MemberNames.Offset)
+                add(++fillIndex, MemberNames.Offset)
             }
             is Fill.RadialGradient -> {
                 add(fillIndex, MemberNames.RadialGradient)
                 path.fill.colorStops.forEach { _ ->
                     add(++fillIndex, MemberNames.Color)
                 }
-                add(MemberNames.Offset)
+                add(++fillIndex, MemberNames.Offset)
             }
             null -> {}
         }
@@ -227,7 +227,7 @@ private fun getPathFill (
         with (path.fill){
             "%M(${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, " +
                     "center = %M(${centerX}f,${centerY}f), " +
-                    "radius = ${gradientRadius}f))"
+                    "radius = ${gradientRadius}f)"
         }
     }
     else -> "null"
