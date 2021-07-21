@@ -18,6 +18,7 @@ package androidx.compose.material.icons.generator
 
 import androidx.compose.material.icons.generator.util.backingPropertySpec
 import androidx.compose.material.icons.generator.util.withBackingProperty
+import androidx.compose.material.icons.generator.vector.Fill
 import androidx.compose.material.icons.generator.vector.Vector
 import androidx.compose.material.icons.generator.vector.VectorNode
 import com.squareup.kotlinpoet.*
@@ -149,12 +150,11 @@ private fun CodeBlock.Builder.addPath(
     path: VectorNode.Path,
     pathBody: CodeBlock.Builder.() -> Unit
 ) {
-    val hasFillColor = path.fillColorHex != null
     val hasStrokeColor = path.strokeColorHex != null
 
     val parameterList = with(path) {
         listOfNotNull(
-            "fill = ${if(hasFillColor) "%M(%M(0x$fillColorHex))" else "null"}",
+            "fill = ${getPathFill(path)}",
             "stroke = ${if(hasStrokeColor) "%M(%M(0x$strokeColorHex))" else "null"}",
             "fillAlpha = ${fillAlpha}f".takeIf { fillAlpha != 1f },
             "strokeAlpha = ${strokeAlpha}f".takeIf { strokeAlpha != 1f },
@@ -170,15 +170,37 @@ private fun CodeBlock.Builder.addPath(
 
     val members: Array<Any> = listOfNotNull(
         MemberNames.Path,
-        MemberNames.SolidColor.takeIf { hasFillColor },
-        MemberNames.Color.takeIf { hasFillColor },
         MemberNames.SolidColor.takeIf { hasStrokeColor },
         MemberNames.Color.takeIf { hasStrokeColor },
         path.strokeLineWidth.memberName,
         path.strokeLineCap.memberName,
         path.strokeLineJoin.memberName,
         path.fillType.memberName
-    ).toTypedArray()
+    ).toMutableList().apply {
+        var fillIndex = 1
+        when (path.fill){
+            is Fill.Color -> {
+                add(fillIndex, MemberNames.SolidColor)
+                add(++fillIndex, MemberNames.Color)
+            }
+            is Fill.LinearGradient -> {
+                add(fillIndex, MemberNames.LinearGradient)
+                path.fill.colorStops.forEach { _ ->
+                    add(++fillIndex, MemberNames.Color)
+                }
+                add(++fillIndex, MemberNames.Offset)
+                add(++fillIndex, MemberNames.Offset)
+            }
+            is Fill.RadialGradient -> {
+                add(fillIndex, MemberNames.RadialGradient)
+                path.fill.colorStops.forEach { _ ->
+                    add(++fillIndex, MemberNames.Color)
+                }
+                add(++fillIndex, MemberNames.Offset)
+            }
+            null -> {}
+        }
+    }.toTypedArray()
 
     beginControlFlow(
         "%M$parameters",
@@ -187,6 +209,57 @@ private fun CodeBlock.Builder.addPath(
 
     pathBody()
     endControlFlow()
+}
+
+private fun getPathFill (
+    path: VectorNode.Path
+) = when (path.fill){
+    is Fill.Color -> "%M(%M(0x${path.fill.colorHex}))"
+    is Fill.LinearGradient -> {
+        with (path.fill){
+            "%M(" +
+                    "${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, " +
+                    "start = %M(${startX}f,${startY}f), " +
+                    "end = %M(${endX}f,${endY}f))"
+        }
+    }
+    is Fill.RadialGradient -> {
+        with (path.fill){
+            "%M(${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, " +
+                    "center = %M(${centerX}f,${centerY}f), " +
+                    "radius = ${gradientRadius}f)"
+        }
+    }
+    else -> "null"
+}
+
+private fun getGradientStops(
+    stops: List<Pair<Float, String>>
+) = stops.map { stop ->
+    "${stop.first}f to %M(0x${stop.second})"
+}
+
+private fun CodeBlock.Builder.addLinearGradient(
+    gradient: Fill.LinearGradient,
+    pathBody: CodeBlock.Builder.() -> Unit
+){
+    //"0.0f to Color.Red"
+    val parameterList = with(gradient) {
+        listOfNotNull(
+            "start = %M(${gradient.startX},${gradient.startY})",
+            "end = %M(${gradient.endX},${gradient.endY})"
+        )
+    }
+
+    val parameters = parameterList.joinToString(prefix = "(", postfix = ")")
+
+    val members: Array<Any> = listOfNotNull(
+        MemberNames.LinearGradient,
+        MemberNames.Offset,
+        MemberNames.Offset
+    ).toTypedArray()
+
+
 }
 
 private val GraphicUnit.withMemberIfNotNull: String get() = "${value}${if (memberName != null) ".%M" else "f"}"
