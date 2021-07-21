@@ -117,10 +117,10 @@ class IconParser(private val icon: Icon) {
                         GRADIENT -> {
                             val gradient = when (parser.getAttributeValue(null, TYPE)){
                                 LINEAR -> {
-                                    val startX = parser.getAttributeValue(null, START_X)
-                                    val startY = parser.getAttributeValue(null, START_Y)
-                                    val endX = parser.getAttributeValue(null, END_X)
-                                    val endY = parser.getAttributeValue(null, END_Y)
+                                    val startX = parser.getValueAsFloat(START_X) ?: 0f
+                                    val startY = parser.getValueAsFloat(START_Y) ?: 0f
+                                    val endX = parser.getValueAsFloat(END_X) ?: 0f
+                                    val endY = parser.getValueAsFloat(END_Y) ?: 0f
                                     Fill.LinearGradient(
                                         startY = startY,
                                         startX = startX,
@@ -129,9 +129,9 @@ class IconParser(private val icon: Icon) {
                                     )
                                 }
                                 RADIAL -> {
-                                    val gradientRadius = parser.getAttributeValue(null, GRADIENT_RADIUS)
-                                    val centerX = parser.getAttributeValue(null, CENTER_X)
-                                    val centerY = parser.getAttributeValue(null, CENTER_Y)
+                                    val gradientRadius = parser.getValueAsFloat(GRADIENT_RADIUS) ?: 0f
+                                    val centerX = parser.getValueAsFloat(CENTER_X) ?: 0f
+                                    val centerY = parser.getValueAsFloat(CENTER_Y) ?: 0f
                                     Fill.RadialGradient(
                                         gradientRadius = gradientRadius,
                                         centerX = centerX,
@@ -152,7 +152,7 @@ class IconParser(private val icon: Icon) {
                             }
                         }
                         ITEM -> {
-                            val offset = parser.getAttributeValue(null, OFFSET)
+                            val offset = parser.getValueAsFloat(OFFSET) ?: 0f
                             val colorHex = parser.getAttributeValue(null, COLOR).toHexColor()
 
                             val colorStop = Pair(offset,colorHex)

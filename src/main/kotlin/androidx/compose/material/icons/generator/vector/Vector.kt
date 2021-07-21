@@ -56,16 +56,16 @@ sealed class VectorNode {
 sealed class Fill {
     data class Color(val colorHex: String) : Fill()
     data class LinearGradient(
-        val startY: String,
-        val startX: String,
-        val endY: String,
-        val endX: String,
-        val colorStops: MutableList<Pair<String,String>> = mutableListOf()
+        val startY: Float,
+        val startX: Float,
+        val endY: Float,
+        val endX: Float,
+        val colorStops: MutableList<Pair<Float,String>> = mutableListOf()
     ) : Fill()
     data class RadialGradient(
-        val gradientRadius: String,
-        val centerX: String,
-        val centerY: String,
-        val colorStops: MutableList<Pair<String,String>> = mutableListOf()
+        val gradientRadius: Float,
+        val centerX: Float,
+        val centerY: Float,
+        val colorStops: MutableList<Pair<Float,String>> = mutableListOf()
     ): Fill()
 }

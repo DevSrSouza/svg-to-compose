@@ -26,6 +26,7 @@ enum class PackageNames(val packageName: String) {
     MaterialIconsPackage("androidx.compose.material.icons"),
     GraphicsPackage("androidx.compose.ui.graphics"),
     VectorPackage(GraphicsPackage.packageName + ".vector"),
+    GeometryPackage("androidx.compose.ui.geometry"),
     Unit("androidx.compose.ui.unit"),
 }
 
@@ -65,6 +66,11 @@ object MemberNames {
 
     val Color = MemberName(PackageNames.GraphicsPackage.packageName, "Color")
     val SolidColor = MemberName(PackageNames.GraphicsPackage.packageName, "SolidColor")
+
+    val LinearGradient = MemberName(PackageNames.GraphicsPackage.packageName, "Brush.linearGradient")
+    val RadialGradient = MemberName(PackageNames.GraphicsPackage.packageName, "Brush.radialGradient")
+
+    val Offset = MemberName(PackageNames.GeometryPackage.packageName, "Offset")
 }
 
 /**

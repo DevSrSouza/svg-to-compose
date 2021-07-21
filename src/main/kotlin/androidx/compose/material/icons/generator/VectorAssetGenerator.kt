@@ -150,13 +150,11 @@ private fun CodeBlock.Builder.addPath(
     path: VectorNode.Path,
     pathBody: CodeBlock.Builder.() -> Unit
 ) {
-    val hasFillColor = path.fill is Fill.Color
-    val fillColorHex = (path.fill as? Fill.Color)?.colorHex
     val hasStrokeColor = path.strokeColorHex != null
 
     val parameterList = with(path) {
         listOfNotNull(
-            "fill = ${if(hasFillColor) "%M(%M(0x$fillColorHex))" else "null"}",
+            "fill = ${getPathFill(path)}",
             "stroke = ${if(hasStrokeColor) "%M(%M(0x$strokeColorHex))" else "null"}",
             "fillAlpha = ${fillAlpha}f".takeIf { fillAlpha != 1f },
             "strokeAlpha = ${strokeAlpha}f".takeIf { strokeAlpha != 1f },
@@ -170,17 +168,29 @@ private fun CodeBlock.Builder.addPath(
 
     val parameters = parameterList.joinToString(prefix = "(", postfix = ")")
 
+    val isColorFill = path.fill is Fill.Color
+    val isLinearGradientFill = path.fill is Fill.LinearGradient
+
     val members: Array<Any> = listOfNotNull(
         MemberNames.Path,
-        MemberNames.SolidColor.takeIf { hasFillColor },
-        MemberNames.Color.takeIf { hasFillColor },
+        MemberNames.SolidColor.takeIf { isColorFill },
+        MemberNames.Color.takeIf { isColorFill },
         MemberNames.SolidColor.takeIf { hasStrokeColor },
         MemberNames.Color.takeIf { hasStrokeColor },
+        MemberNames.LinearGradient.takeIf { isLinearGradientFill },
+        MemberNames.Offset.takeIf { isLinearGradientFill },
+        MemberNames.Offset.takeIf { isLinearGradientFill },
+        MemberNames.RadialGradient.takeIf { path.fill is Fill.RadialGradient },
         path.strokeLineWidth.memberName,
         path.strokeLineCap.memberName,
         path.strokeLineJoin.memberName,
         path.fillType.memberName
-    ).toTypedArray()
+    ).toMutableList().apply {
+        if (path.fill is Fill.LinearGradient)
+            path.fill.colorStops.forEach { _ ->
+                this.add(2, MemberNames.Color)
+            }
+    }.toTypedArray()
 
     beginControlFlow(
         "%M$parameters",
@@ -189,6 +199,48 @@ private fun CodeBlock.Builder.addPath(
 
     pathBody()
     endControlFlow()
+}
+
+private fun getPathFill (
+    path: VectorNode.Path
+) = when (path.fill){
+    is Fill.Color -> "%M(%M(0x${path.fill.colorHex}))"
+    is Fill.LinearGradient -> {
+        with (path.fill){
+            "%M(${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, start = %M(${startX}f,${startY}f), end = %M(${endX}f,${endY}f))"
+        }
+    }
+    is Fill.RadialGradient -> "%M(<gradientContent>)"
+    else -> "null"
+}
+
+private fun getGradientStops(
+    stops: List<Pair<Float, String>>
+) = stops.map { stop ->
+    "${stop.first}f to %M(0x${stop.second})"
+}
+
+private fun CodeBlock.Builder.addLinearGradient(
+    gradient: Fill.LinearGradient,
+    pathBody: CodeBlock.Builder.() -> Unit
+){
+    //"0.0f to Color.Red"
+    val parameterList = with(gradient) {
+        listOfNotNull(
+            "start = %M(${gradient.startX},${gradient.startY})",
+            "end = %M(${gradient.endX},${gradient.endY})"
+        )
+    }
+
+    val parameters = parameterList.joinToString(prefix = "(", postfix = ")")
+
+    val members: Array<Any> = listOfNotNull(
+        MemberNames.LinearGradient,
+        MemberNames.Offset,
+        MemberNames.Offset
+    ).toTypedArray()
+
+
 }
 
 private val GraphicUnit.withMemberIfNotNull: String get() = "${value}${if (memberName != null) ".%M" else "f"}"
