@@ -168,28 +168,38 @@ private fun CodeBlock.Builder.addPath(
 
     val parameters = parameterList.joinToString(prefix = "(", postfix = ")")
 
-    val isColorFill = path.fill is Fill.Color
-    val isLinearGradientFill = path.fill is Fill.LinearGradient
-
     val members: Array<Any> = listOfNotNull(
         MemberNames.Path,
-        MemberNames.SolidColor.takeIf { isColorFill },
-        MemberNames.Color.takeIf { isColorFill },
         MemberNames.SolidColor.takeIf { hasStrokeColor },
         MemberNames.Color.takeIf { hasStrokeColor },
-        MemberNames.LinearGradient.takeIf { isLinearGradientFill },
-        MemberNames.Offset.takeIf { isLinearGradientFill },
-        MemberNames.Offset.takeIf { isLinearGradientFill },
-        MemberNames.RadialGradient.takeIf { path.fill is Fill.RadialGradient },
         path.strokeLineWidth.memberName,
         path.strokeLineCap.memberName,
         path.strokeLineJoin.memberName,
         path.fillType.memberName
     ).toMutableList().apply {
-        if (path.fill is Fill.LinearGradient)
-            path.fill.colorStops.forEach { _ ->
-                this.add(2, MemberNames.Color)
+        var fillIndex = 1
+        when (path.fill){
+            is Fill.Color -> {
+                add(fillIndex, MemberNames.SolidColor)
+                add(++fillIndex, MemberNames.Color)
             }
+            is Fill.LinearGradient -> {
+                add(fillIndex, MemberNames.LinearGradient)
+                path.fill.colorStops.forEach { _ ->
+                    add(++fillIndex, MemberNames.Color)
+                }
+                add(MemberNames.Offset)
+                add(MemberNames.Offset)
+            }
+            is Fill.RadialGradient -> {
+                add(fillIndex, MemberNames.RadialGradient)
+                path.fill.colorStops.forEach { _ ->
+                    add(++fillIndex, MemberNames.Color)
+                }
+                add(MemberNames.Offset)
+            }
+            null -> {}
+        }
     }.toTypedArray()
 
     beginControlFlow(
@@ -207,10 +217,19 @@ private fun getPathFill (
     is Fill.Color -> "%M(%M(0x${path.fill.colorHex}))"
     is Fill.LinearGradient -> {
         with (path.fill){
-            "%M(${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, start = %M(${startX}f,${startY}f), end = %M(${endX}f,${endY}f))"
+            "%M(" +
+                    "${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, " +
+                    "start = %M(${startX}f,${startY}f), " +
+                    "end = %M(${endX}f,${endY}f))"
         }
     }
-    is Fill.RadialGradient -> "%M(<gradientContent>)"
+    is Fill.RadialGradient -> {
+        with (path.fill){
+            "%M(${getGradientStops(path.fill.colorStops).toString().removeSurrounding("[","]")}, " +
+                    "center = %M(${centerX}f,${centerY}f), " +
+                    "radius = ${gradientRadius}f))"
+        }
+    }
     else -> "null"
 }
 
