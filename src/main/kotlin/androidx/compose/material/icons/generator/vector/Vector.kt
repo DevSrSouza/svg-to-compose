@@ -54,6 +54,16 @@ sealed class VectorNode {
 }
 
 sealed class Fill {
-    class FillColor(val colorHex: String): Fill()
-    class FillLinearGradient(val linearGradientPaint: LinearGradientPaint): Fill()
+    data class Color(val colorHex: String) : Fill()
+    data class LinearGradient(
+        val startY: String,
+        val startX: String,
+        val endY: String,
+        val endX: String
+    ) : Fill()
+    data class RadialGradient(
+        val gradientRadius: String,
+        val centerX: String,
+        val centerY: String
+    ): Fill()
 }

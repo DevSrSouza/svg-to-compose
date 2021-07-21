@@ -150,8 +150,8 @@ private fun CodeBlock.Builder.addPath(
     path: VectorNode.Path,
     pathBody: CodeBlock.Builder.() -> Unit
 ) {
-    val hasFillColor = path.fill is Fill.FillColor
-    val fillColorHex = (path.fill as? Fill.FillColor)?.colorHex
+    val hasFillColor = path.fill is Fill.Color
+    val fillColorHex = (path.fill as? Fill.Color)?.colorHex
     val hasStrokeColor = path.strokeColorHex != null
 
     val parameterList = with(path) {

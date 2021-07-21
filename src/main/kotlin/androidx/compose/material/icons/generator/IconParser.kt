@@ -84,7 +84,7 @@ class IconParser(private val icon: Icon) {
                                 ?.toHexColor()
 
                             val fill = when {
-                                fillColor != null -> Fill.FillColor(fillColor)
+                                fillColor != null -> Fill.Color(fillColor)
                                 else -> null
                             }
 
@@ -115,9 +115,31 @@ class IconParser(private val icon: Icon) {
                         CLIP_PATH -> { /* TODO: b/147418351 - parse clipping paths */
                         }
                         GRADIENT -> {
-                            val gradient = Fill.FillColor("FFFF9500") //TODO change this for the actual gradient
-                            
-
+                            val gradient = when (parser.getAttributeValue(null, TYPE)){
+                                LINEAR -> {
+                                    val startX = parser.getAttributeValue(null, START_X)
+                                    val startY = parser.getAttributeValue(null, START_Y)
+                                    val endX = parser.getAttributeValue(null, END_X)
+                                    val endY = parser.getAttributeValue(null, END_Y)
+                                    Fill.LinearGradient(
+                                        startY = startY,
+                                        startX = startX,
+                                        endX = endX,
+                                        endY = endY
+                                    )
+                                }
+                                RADIAL -> {
+                                    val gradientRadius = parser.getAttributeValue(null, GRADIENT_RADIUS)
+                                    val centerX = parser.getAttributeValue(null, CENTER_X)
+                                    val centerY = parser.getAttributeValue(null, CENTER_Y)
+                                    Fill.RadialGradient(
+                                        gradientRadius = gradientRadius,
+                                        centerX = centerX,
+                                        centerY = centerY
+                                    )
+                                }
+                                else -> null
+                            }
 
                             val lastPath = currentGroup?.paths?.removeLast() ?: nodes.removeLast()
                             if (lastPath as? VectorNode.Path != null && lastPath.fill == null){
@@ -186,6 +208,10 @@ private const val GROUP = "group"
 private const val PATH = "path"
 private const val GRADIENT = "gradient"
 
+// XML gradient names
+private const val LINEAR = "linear"
+private const val RADIAL = "radial"
+
 // Path XML attribute names
 private const val PATH_DATA = "android:pathData"
 private const val FILL_ALPHA = "android:fillAlpha"
@@ -198,12 +224,21 @@ private const val STROKE_MITER_LIMIT = "android:strokeMiterLimit"
 private const val STROKE_COLOR = "android:strokeColor"
 private const val FILL_COLOR = "android:fillColor"
 
+// Gradient XML attribute names
+private const val TYPE = "android:type"
+private const val START_Y = "android:startY"
+private const val START_X = "android:startX"
+private const val END_Y = "android:endY"
+private const val END_X = "android:endX"
+private const val GRADIENT_RADIUS = "android:gradientRadius"
+private const val CENTER_X = "android:centerX"
+private const val CENTER_Y = "android:centerY"
+
 // Vector XML attribute names
 private const val WIDTH = "android:width"
 private const val HEIGHT = "android:height"
 private const val VIEWPORT_WIDTH = "android:viewportWidth"
 private const val VIEWPORT_HEIGHT = "android:viewportHeight"
-
 
 // XML attribute values
 private const val EVEN_ODD = "evenOdd"
