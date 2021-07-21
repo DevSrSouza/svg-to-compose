@@ -18,6 +18,7 @@ package androidx.compose.material.icons.generator
 
 import androidx.compose.material.icons.generator.util.backingPropertySpec
 import androidx.compose.material.icons.generator.util.withBackingProperty
+import androidx.compose.material.icons.generator.vector.Fill
 import androidx.compose.material.icons.generator.vector.Vector
 import androidx.compose.material.icons.generator.vector.VectorNode
 import com.squareup.kotlinpoet.*
@@ -149,7 +150,8 @@ private fun CodeBlock.Builder.addPath(
     path: VectorNode.Path,
     pathBody: CodeBlock.Builder.() -> Unit
 ) {
-    val hasFillColor = path.fillColorHex != null
+    val hasFillColor = path.fill is Fill.FillColor
+    val fillColorHex = (path.fill as? Fill.FillColor)?.colorHex
     val hasStrokeColor = path.strokeColorHex != null
 
     val parameterList = with(path) {

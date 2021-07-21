@@ -83,9 +83,13 @@ class IconParser(private val icon: Icon) {
                             val fillColor = parser.getAttributeValue(null, FILL_COLOR)
                                 ?.toHexColor()
 
+                            val fill = when {
+                                fillColor != null -> Fill.FillColor(fillColor)
+                                else -> null
+                            }
 
                             val path = VectorNode.Path(
-                                fillColorHex = fillColor,
+                                fill = fill,
                                 strokeColorHex = strokeColor,
                                 strokeAlpha = strokeAlpha ?: 1f,
                                 fillAlpha = fillAlpha ?: 1f,
