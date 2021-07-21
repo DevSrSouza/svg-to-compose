@@ -59,11 +59,13 @@ sealed class Fill {
         val startY: String,
         val startX: String,
         val endY: String,
-        val endX: String
+        val endX: String,
+        val colorStops: MutableList<Pair<String,String>> = mutableListOf()
     ) : Fill()
     data class RadialGradient(
         val gradientRadius: String,
         val centerX: String,
-        val centerY: String
+        val centerY: String,
+        val colorStops: MutableList<Pair<String,String>> = mutableListOf()
     ): Fill()
 }

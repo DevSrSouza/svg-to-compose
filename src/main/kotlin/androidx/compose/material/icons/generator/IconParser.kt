@@ -151,6 +151,18 @@ class IconParser(private val icon: Icon) {
                                 }
                             }
                         }
+                        ITEM -> {
+                            val offset = parser.getAttributeValue(null, OFFSET)
+                            val colorHex = parser.getAttributeValue(null, COLOR).toHexColor()
+
+                            val colorStop = Pair(offset,colorHex)
+                            val lastPath = (currentGroup?.paths?.last() ?: nodes.last()) as? VectorNode.Path
+                            when (lastPath?.fill){
+                                is Fill.LinearGradient -> lastPath.fill.colorStops.add(colorStop)
+                                is Fill.RadialGradient -> lastPath.fill.colorStops.add(colorStop)
+                                else -> {}
+                            }
+                        }
                     }
                 }
             }
@@ -190,7 +202,7 @@ private fun XmlPullParser.isAtEnd() =
 
 private val hexRegex = "^[0-9a-fA-F]{6,8}".toRegex()
 
-private fun String.toHexColor(): String? {
+private fun String.toHexColor(): String {
     return removePrefix("#")
         .let {
             if(hexRegex.matches(it)) {
@@ -207,8 +219,9 @@ private const val CLIP_PATH = "clip-path"
 private const val GROUP = "group"
 private const val PATH = "path"
 private const val GRADIENT = "gradient"
+private const val ITEM = "item"
 
-// XML gradient names
+// XML  names
 private const val LINEAR = "linear"
 private const val RADIAL = "radial"
 
@@ -233,6 +246,10 @@ private const val END_X = "android:endX"
 private const val GRADIENT_RADIUS = "android:gradientRadius"
 private const val CENTER_X = "android:centerX"
 private const val CENTER_Y = "android:centerY"
+
+// Item XML attribute names
+private const val OFFSET = "android:offset"
+private const val COLOR = "android:color"
 
 // Vector XML attribute names
 private const val WIDTH = "android:width"
