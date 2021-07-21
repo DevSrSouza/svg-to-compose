@@ -114,6 +114,21 @@ class IconParser(private val icon: Icon) {
                         }
                         CLIP_PATH -> { /* TODO: b/147418351 - parse clipping paths */
                         }
+                        GRADIENT -> {
+                            val gradient = Fill.FillColor("FFFF9500") //TODO change this for the actual gradient
+                            
+
+
+                            val lastPath = currentGroup?.paths?.removeLast() ?: nodes.removeLast()
+                            if (lastPath as? VectorNode.Path != null && lastPath.fill == null){
+                                val gradientPath = lastPath.copy (fill = gradient)
+                                if (currentGroup != null) {
+                                    currentGroup.paths.add(gradientPath)
+                                } else {
+                                    nodes.add(gradientPath)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -169,6 +184,7 @@ private fun String.toHexColor(): String? {
 private const val CLIP_PATH = "clip-path"
 private const val GROUP = "group"
 private const val PATH = "path"
+private const val GRADIENT = "gradient"
 
 // Path XML attribute names
 private const val PATH_DATA = "android:pathData"
