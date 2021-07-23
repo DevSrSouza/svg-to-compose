@@ -26,6 +26,7 @@ enum class PackageNames(val packageName: String) {
     MaterialIconsPackage("androidx.compose.material.icons"),
     GraphicsPackage("androidx.compose.ui.graphics"),
     VectorPackage(GraphicsPackage.packageName + ".vector"),
+    GeometryPackage("androidx.compose.ui.geometry"),
     Unit("androidx.compose.ui.unit"),
 }
 
@@ -38,6 +39,7 @@ object ClassNames {
     val PathFillType = PackageNames.GraphicsPackage.className("PathFillType", CompanionImportName)
     val StrokeCap = PackageNames.GraphicsPackage.className("StrokeCap", CompanionImportName)
     val StrokeJoin = PackageNames.GraphicsPackage.className("StrokeJoin", CompanionImportName)
+    val Brush = PackageNames.GraphicsPackage.className("Brush", CompanionImportName)
 }
 
 /**
@@ -65,6 +67,11 @@ object MemberNames {
 
     val Color = MemberName(PackageNames.GraphicsPackage.packageName, "Color")
     val SolidColor = MemberName(PackageNames.GraphicsPackage.packageName, "SolidColor")
+
+    val LinearGradient = MemberName(ClassNames.Brush, "linearGradient")
+    val RadialGradient = MemberName(ClassNames.Brush, "radialGradient")
+
+    val Offset = MemberName(PackageNames.GeometryPackage.packageName, "Offset")
 }
 
 /**

@@ -83,9 +83,13 @@ class IconParser(private val icon: Icon) {
                             val fillColor = parser.getAttributeValue(null, FILL_COLOR)
                                 ?.toHexColor()
 
+                            val fill = when {
+                                fillColor != null -> Fill.Color(fillColor)
+                                else -> null
+                            }
 
                             val path = VectorNode.Path(
-                                fillColorHex = fillColor,
+                                fill = fill,
                                 strokeColorHex = strokeColor,
                                 strokeAlpha = strokeAlpha ?: 1f,
                                 fillAlpha = fillAlpha ?: 1f,
@@ -109,6 +113,55 @@ class IconParser(private val icon: Icon) {
                             nodes.add(group)
                         }
                         CLIP_PATH -> { /* TODO: b/147418351 - parse clipping paths */
+                        }
+                        GRADIENT -> {
+                            val gradient = when (parser.getAttributeValue(null, TYPE)){
+                                LINEAR -> {
+                                    val startX = parser.getValueAsFloat(START_X) ?: 0f
+                                    val startY = parser.getValueAsFloat(START_Y) ?: 0f
+                                    val endX = parser.getValueAsFloat(END_X) ?: 0f
+                                    val endY = parser.getValueAsFloat(END_Y) ?: 0f
+                                    Fill.LinearGradient(
+                                        startY = startY,
+                                        startX = startX,
+                                        endX = endX,
+                                        endY = endY
+                                    )
+                                }
+                                RADIAL -> {
+                                    val gradientRadius = parser.getValueAsFloat(GRADIENT_RADIUS) ?: 0f
+                                    val centerX = parser.getValueAsFloat(CENTER_X) ?: 0f
+                                    val centerY = parser.getValueAsFloat(CENTER_Y) ?: 0f
+                                    Fill.RadialGradient(
+                                        gradientRadius = gradientRadius,
+                                        centerX = centerX,
+                                        centerY = centerY
+                                    )
+                                }
+                                else -> null
+                            }
+
+                            val lastPath = currentGroup?.paths?.removeLast() ?: nodes.removeLast()
+                            if (lastPath as? VectorNode.Path != null && lastPath.fill == null){
+                                val gradientPath = lastPath.copy (fill = gradient)
+                                if (currentGroup != null) {
+                                    currentGroup.paths.add(gradientPath)
+                                } else {
+                                    nodes.add(gradientPath)
+                                }
+                            }
+                        }
+                        ITEM -> {
+                            val offset = parser.getValueAsFloat(OFFSET) ?: 0f
+                            val colorHex = parser.getAttributeValue(null, COLOR).toHexColor()
+
+                            val colorStop = Pair(offset,colorHex)
+                            val lastPath = (currentGroup?.paths?.last() ?: nodes.last()) as? VectorNode.Path
+                            when (lastPath?.fill){
+                                is Fill.LinearGradient -> lastPath.fill.colorStops.add(colorStop)
+                                is Fill.RadialGradient -> lastPath.fill.colorStops.add(colorStop)
+                                else -> {}
+                            }
                         }
                     }
                 }
@@ -149,7 +202,7 @@ private fun XmlPullParser.isAtEnd() =
 
 private val hexRegex = "^[0-9a-fA-F]{6,8}".toRegex()
 
-private fun String.toHexColor(): String? {
+private fun String.toHexColor(): String {
     return removePrefix("#")
         .let {
             if(hexRegex.matches(it)) {
@@ -165,6 +218,12 @@ private fun String.toHexColor(): String? {
 private const val CLIP_PATH = "clip-path"
 private const val GROUP = "group"
 private const val PATH = "path"
+private const val GRADIENT = "gradient"
+private const val ITEM = "item"
+
+// XML  names
+private const val LINEAR = "linear"
+private const val RADIAL = "radial"
 
 // Path XML attribute names
 private const val PATH_DATA = "android:pathData"
@@ -178,12 +237,25 @@ private const val STROKE_MITER_LIMIT = "android:strokeMiterLimit"
 private const val STROKE_COLOR = "android:strokeColor"
 private const val FILL_COLOR = "android:fillColor"
 
+// Gradient XML attribute names
+private const val TYPE = "android:type"
+private const val START_Y = "android:startY"
+private const val START_X = "android:startX"
+private const val END_Y = "android:endY"
+private const val END_X = "android:endX"
+private const val GRADIENT_RADIUS = "android:gradientRadius"
+private const val CENTER_X = "android:centerX"
+private const val CENTER_Y = "android:centerY"
+
+// Item XML attribute names
+private const val OFFSET = "android:offset"
+private const val COLOR = "android:color"
+
 // Vector XML attribute names
 private const val WIDTH = "android:width"
 private const val HEIGHT = "android:height"
 private const val VIEWPORT_WIDTH = "android:viewportWidth"
 private const val VIEWPORT_HEIGHT = "android:viewportHeight"
-
 
 // XML attribute values
 private const val EVEN_ODD = "evenOdd"

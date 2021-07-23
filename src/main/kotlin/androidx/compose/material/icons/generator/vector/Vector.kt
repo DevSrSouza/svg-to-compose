@@ -17,6 +17,7 @@
 package androidx.compose.material.icons.generator.vector
 
 import androidx.compose.material.icons.generator.GraphicUnit
+import java.awt.LinearGradientPaint
 
 /**
  * Simplified representation of a vector, with root [nodes].
@@ -38,8 +39,8 @@ class Vector(
  */
 sealed class VectorNode {
     class Group(val paths: MutableList<Path> = mutableListOf()) : VectorNode()
-    class Path(
-        val fillColorHex: String?,
+    data class Path(
+        val fill: Fill?,
         val strokeColorHex: String?,
         val strokeAlpha: Float,
         val fillAlpha: Float,
@@ -50,4 +51,21 @@ sealed class VectorNode {
         val fillType: FillType,
         val nodes: List<PathNode>
     ) : VectorNode()
+}
+
+sealed class Fill {
+    data class Color(val colorHex: String) : Fill()
+    data class LinearGradient(
+        val startY: Float,
+        val startX: Float,
+        val endY: Float,
+        val endX: Float,
+        val colorStops: MutableList<Pair<Float,String>> = mutableListOf()
+    ) : Fill()
+    data class RadialGradient(
+        val gradientRadius: Float,
+        val centerX: Float,
+        val centerY: Float,
+        val colorStops: MutableList<Pair<Float,String>> = mutableListOf()
+    ): Fill()
 }
