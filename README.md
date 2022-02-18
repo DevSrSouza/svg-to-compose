@@ -2,6 +2,8 @@
 
 Converts SVG or Android Vector Drawable to Compose code.
 
+- [Android Studio/IntelliJ plugin](https://plugins.jetbrains.com/plugin/18619-svg-to-compose) by [overpass](https://github.com/overpas)
+
 ### Why this project
 
 On the start of the [Compose for Desktop](https://www.jetbrains.com/lp/compose/) it does not support SVG files and Android Vector Drawables. This also difficulties a migration of the App to Multiplatform (Desktop and Android).
@@ -88,6 +90,6 @@ Svg2Compose.parse(
 )
 ```
 
-**Using in code**: `LineaIcons.Arrows.ButtonUp`
+**Using in code**: `LineaIcons.Arrows.Buhttps://github.com/overpas/svg-to-compose-intellijttonUp`
 
 The project also generate an accessor for all yours assets, for the given example, it should be `LineaIcons.AllIcons` and it also generated for child groups `LineaIcons.Arrows.AllIcons`
