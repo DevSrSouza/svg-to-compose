@@ -35,9 +35,33 @@ class TestMain {
             "Icons weren't generated"
         }
 
+
+        var requiredIcons = mutableListOf<String>()
+
+        iconsDir.walkTopDown().onEnter { it ->
+            if (it.isFile && it.isPlausibleIcon) {
+                requiredIcons.add(it.path.camelCase)
+                true
+            } else false
+        }
+
+        val generatedIcons = mutableListOf<File>()
+        destinationDir.walkTopDown().onEnter { it ->
+            if (it.isFile) {
+                generatedIcons.add(it)
+                true
+            } else false
+
+        }
+
+        assertEquals(requiredIcons.size, generatedIcons.size, "Error generating all icons.")
+
         destinationDir.deleteRecursively()
 
     }
+
+    val File.isPlausibleIcon
+        get() = extension.lowercase() == "xml" || extension.lowercase() == "svg"
 
     private fun String.removeSuffix(suffix: String, ignoreCase: Boolean): String {
         return if (ignoreCase) {
@@ -56,6 +80,7 @@ class TestMain {
         assertEquals(iconName, "icon-name".camelCase)
         assertEquals(iconName, "icon name".camelCase)
         assertEquals(iconName, "icon_name".camelCase)
+
     }
 
     val String.camelCase: String

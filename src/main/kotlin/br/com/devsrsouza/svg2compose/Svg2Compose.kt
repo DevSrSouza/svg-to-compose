@@ -7,6 +7,7 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.MemberName
 import java.io.File
 import java.util.*
+import kotlin.io.path.createTempDirectory
 
 typealias IconNameTransformer = (iconName: String, group: String) -> String
 
@@ -47,9 +48,9 @@ object Svg2Compose {
 
                 // if there is no previous group, this is the root dir, and the group name should be the accessorName
                 val groupName = if (previousGroup == null) accessorName else file.name.toKotlinPropertyName()
-                val groupPackage = previousGroup?.let { group -> "${group.groupPackage}.${group.groupName.second.toLowerCase()}" }
-                    ?: "$applicationIconPackage"
-                val iconsPackage = "$groupPackage.${groupName.toLowerCase()}"
+                val groupPackage = previousGroup?.let { group -> "${group.groupPackage}.${group.groupName.second.lowercase()}" }
+                    ?: applicationIconPackage
+                val iconsPackage = "$groupPackage.${groupName.lowercase()}"
 
                 val (groupFileSpec, groupClassName) = IconGroupGenerator(
                     groupPackage,
@@ -96,7 +97,7 @@ object Svg2Compose {
                             memberNames.first { it.simpleName == entry.value.kotlinName }
                         }
                     } else {
-                        emptyMap<VectorFile, MemberName>()
+                        emptyMap()
                     }
 
                 val result = GeneratedGroup(
@@ -141,7 +142,7 @@ object Svg2Compose {
         return groupStack.pop().asParsingResult()
     }
 
-    private fun drawableTempDirectory() = createTempDir(suffix = "svg2compose/")
+    private fun drawableTempDirectory() = createTempDirectory(prefix = "svg2compose").toFile()
 
     private val String.withoutExtension get() = substringBeforeLast(".")
 }
