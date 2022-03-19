@@ -28,7 +28,8 @@ object Svg2Compose {
         vectorsDirectory: File,
         type: VectorType = VectorType.SVG,
         iconNameTransformer: IconNameTransformer = { it, _ -> it },
-        allAssetsPropertyName: String = "AllAssets"
+        allAssetsPropertyName: String = "AllAssets",
+        defaultSize: Int?,
     ): ParsingResult {
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
 
@@ -89,6 +90,7 @@ object Svg2Compose {
                             icons.values,
                             groupClassName,
                             iconsPackage,
+                            defaultSize
                         )
 
                         val memberNames = writer.generateTo(outputSourceDirectory) { true }

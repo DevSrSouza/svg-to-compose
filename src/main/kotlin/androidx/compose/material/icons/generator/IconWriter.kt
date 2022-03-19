@@ -16,7 +16,6 @@
 
 package androidx.compose.material.icons.generator
 
-import br.com.devsrsouza.svg2compose.IconNameTransformer
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.MemberName
 import java.io.File
@@ -32,6 +31,7 @@ class IconWriter(
     private val icons: Collection<Icon>,
     private val groupClass: ClassName,
     private val groupPackage: String,
+    private val defaultSize: Int?,
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -55,7 +55,22 @@ class IconWriter(
         }.map { icon ->
             val iconName = icon.kotlinName
 
-            val vector = IconParser(icon).parse()
+            val vector = IconParser(icon).parse().let { parsedVector ->
+                defaultSize?.let {
+                    parsedVector.copy(
+                        width = when (parsedVector.width) {
+                            is Pixel -> Pixel(defaultSize.toFloat())
+                            is Dp -> Dp(defaultSize.toFloat())
+                        },
+                        height = when (parsedVector.width) {
+                            is Pixel -> Pixel(defaultSize.toFloat())
+                            is Dp -> Dp(defaultSize.toFloat())
+                        },
+                        viewportWidth = defaultSize.toFloat(),
+                        viewportHeight = defaultSize.toFloat()
+                    )
+                } ?: parsedVector
+            }
 
             val (fileSpec, accessProperty) = VectorAssetGenerator(
                 iconName,
