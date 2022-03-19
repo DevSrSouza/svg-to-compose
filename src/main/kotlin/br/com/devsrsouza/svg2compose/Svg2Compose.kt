@@ -29,7 +29,7 @@ object Svg2Compose {
         type: VectorType = VectorType.SVG,
         iconNameTransformer: IconNameTransformer = { it, _ -> it },
         allAssetsPropertyName: String = "AllAssets",
-        defaultSize: Int?,
+        defaultSize: Int? = null,
     ): ParsingResult {
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
 

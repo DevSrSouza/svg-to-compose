@@ -55,8 +55,10 @@ class IconWriter(
         }.map { icon ->
             val iconName = icon.kotlinName
 
+            /**check [androidx.compose.material.icons.generator.vector.Vector]**/
             val vector = IconParser(icon).parse().let { parsedVector ->
                 defaultSize?.let {
+                    /*THE WHEN IS JUST TO BE SAFE ABOUT IT*/
                     parsedVector.copy(
                         width = when (parsedVector.width) {
                             is Pixel -> Pixel(defaultSize.toFloat())
@@ -65,9 +67,7 @@ class IconWriter(
                         height = when (parsedVector.width) {
                             is Pixel -> Pixel(defaultSize.toFloat())
                             is Dp -> Dp(defaultSize.toFloat())
-                        },
-                        viewportWidth = defaultSize.toFloat(),
-                        viewportHeight = defaultSize.toFloat()
+                        }
                     )
                 } ?: parsedVector
             }
@@ -81,6 +81,9 @@ class IconWriter(
             fileSpec.writeTo(outputSrcDirectory)
 
             MemberName(fileSpec.packageName, accessProperty)
+
         }
+
     }
+
 }

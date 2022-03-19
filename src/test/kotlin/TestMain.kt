@@ -26,7 +26,8 @@ class TestMain {
             vectorsDirectory = iconsDir,
             iconNameTransformer = { name, group ->
                 name.removeSuffix(group, ignoreCase = true)
-            }
+            },
+            defaultSize = 24
         )
 
         val generatedIconsDir = File(destinationDir, "br/com/compose/icons")
@@ -35,8 +36,7 @@ class TestMain {
             "Icons weren't generated"
         }
 
-
-        var requiredIcons = mutableListOf<String>()
+        val requiredIcons = mutableListOf<String>()
 
         iconsDir.walkTopDown().onEnter { it ->
             if (it.isFile && it.isPlausibleIcon) {
@@ -56,7 +56,7 @@ class TestMain {
 
         assertEquals(requiredIcons.size, generatedIcons.size, "Error generating all icons.")
 
-        destinationDir.deleteRecursively()
+        // destinationDir.deleteRecursively()
 
     }
 
