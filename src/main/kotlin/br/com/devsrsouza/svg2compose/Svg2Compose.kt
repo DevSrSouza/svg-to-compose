@@ -8,12 +8,16 @@ import com.squareup.kotlinpoet.MemberName
 import java.io.File
 import java.util.*
 import kotlin.io.path.createTempDirectory
+import kotlin.math.max
 
 typealias IconNameTransformer = (iconName: String, group: String) -> String
 
 data class Size(val height: Float, val width: Float) {
     constructor(size: Float) : this(size, size)
     constructor(size: Int) : this(size.toFloat())
+
+    val maxValue
+        get() = max(height, width).toInt()
 }
 
 object Svg2Compose {
@@ -101,7 +105,11 @@ object Svg2Compose {
                         val memberNames = writer.generateTo(outputSourceDirectory) { true }
 
                         icons.mapValues { entry ->
-                            memberNames.first { it.simpleName == entry.value.kotlinName }
+                            memberNames.first {
+                                val name = (size?.let { setSize -> "${entry.value.kotlinName}${setSize.maxValue}" }
+                                    ?: entry.value.kotlinName)
+                                it.simpleName == name
+                            }
                         }
                     } else {
                         emptyMap()

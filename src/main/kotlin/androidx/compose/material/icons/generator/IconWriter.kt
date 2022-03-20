@@ -73,7 +73,9 @@ class IconWriter(
             }
 
             val (fileSpec, accessProperty) = VectorAssetGenerator(
-                iconName,
+                 defaultSize?.let {
+                     "$iconName${it.maxValue}"
+                 } ?: iconName,
                 groupPackage,
                 vector
             ).createFileSpec(groupClass)
