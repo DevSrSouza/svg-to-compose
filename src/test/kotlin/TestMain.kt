@@ -1,5 +1,6 @@
 package br.com.devsrsouza.svg2compose
 
+import androidx.compose.ui.window.application
 import org.junit.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -9,7 +10,7 @@ class TestMain {
     @Test
     fun traverseGeneratorTest() {
         val iconsDir = File("src/test/resources/icons")
-        val destinationDir = File("src/test/resources/generated").apply { mkdirs() }
+        val destinationDir = File("src/test/kotlin/").apply { mkdirs() }
 
         assert(iconsDir.exists()) {
             "Make sure to add icons into res dir. Default test icons have been provided"
@@ -27,7 +28,7 @@ class TestMain {
             iconNameTransformer = { name, group ->
                 name.removeSuffix(group, ignoreCase = true)
             },
-            size = Size(24)
+            size = Size(640)
         )
 
         val generatedIconsDir = File(destinationDir, "br/com/compose/icons")
@@ -55,9 +56,7 @@ class TestMain {
 
         }
 
-        // assertEquals(requiredIcons.size, generatedIcons.size, "Error generating all icons.")
-
-        // destinationDir.deleteRecursively()
+        assertEquals(requiredIcons.size, generatedIcons.size, "Error generating all icons.")
 
     }
 
@@ -89,4 +88,6 @@ class TestMain {
             it[0].uppercase() + it.substring(1, it.length)
         }
 }
+
+
 
