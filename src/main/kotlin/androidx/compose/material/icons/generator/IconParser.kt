@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2020 The Android Open Source Project
  *
@@ -18,13 +17,16 @@
 package androidx.compose.material.icons.generator
 
 import androidx.compose.material.icons.generator.vector.*
+import br.com.devsrsouza.svg2compose.Size
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParser.END_DOCUMENT
 import org.xmlpull.v1.XmlPullParser.END_TAG
 import org.xmlpull.v1.XmlPullParser.START_TAG
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
-import kotlin.math.log10
+
+
+data class ScaleFactor(val x: Float = 1f, val y: Float = 1f)
 
 /**
  * Parser that converts [icon]s into [Vector]s
@@ -34,7 +36,7 @@ class IconParser(private val icon: Icon) {
     /**
      * @return a [Vector] representing the provided [icon].
      */
-    fun parse(): Vector {
+    fun parse(defaultSize: Size? = null): Vector {
         val parser = XmlPullParserFactory.newInstance().newPullParser().apply {
             setInput(icon.fileContent.byteInputStream(), null)
             seekToStartTag()
@@ -46,6 +48,13 @@ class IconParser(private val icon: Icon) {
         val height = rawAsGraphicUnit(parser.getAttributeValue(null, HEIGHT))
         val viewportWidth = parser.getAttributeValue(null, VIEWPORT_WIDTH).toFloat()
         val viewportHeight = parser.getAttributeValue(null, VIEWPORT_HEIGHT).toFloat()
+
+        val scale = defaultSize?.let { requestedSize ->
+            ScaleFactor(
+                requestedSize.width / viewportWidth,
+                requestedSize.height / viewportHeight
+            )
+        } ?: ScaleFactor()
 
         parser.next()
 
@@ -98,7 +107,7 @@ class IconParser(private val icon: Icon) {
                                 strokeLineJoin = strokeJoin ?: StrokeJoin.Miter,
                                 strokeLineMiter = strokeMiterLimit ?: 4.0f,
                                 fillType = fillType,
-                                nodes = PathParser.parsePathString(pathData)
+                                nodes = PathParser.parsePathString(pathData, scale)
                             )
                             if (currentGroup != null) {
                                 currentGroup.paths.add(path)
@@ -115,7 +124,7 @@ class IconParser(private val icon: Icon) {
                         CLIP_PATH -> { /* TODO: b/147418351 - parse clipping paths */
                         }
                         GRADIENT -> {
-                            val gradient = when (parser.getAttributeValue(null, TYPE)){
+                            val gradient = when (parser.getAttributeValue(null, TYPE)) {
                                 LINEAR -> {
                                     val startX = parser.getValueAsFloat(START_X) ?: 0f
                                     val startY = parser.getValueAsFloat(START_Y) ?: 0f
@@ -142,8 +151,8 @@ class IconParser(private val icon: Icon) {
                             }
 
                             val lastPath = currentGroup?.paths?.removeLast() ?: nodes.removeLast()
-                            if (lastPath as? VectorNode.Path != null && lastPath.fill == null){
-                                val gradientPath = lastPath.copy (fill = gradient)
+                            if (lastPath as? VectorNode.Path != null && lastPath.fill == null) {
+                                val gradientPath = lastPath.copy(fill = gradient)
                                 if (currentGroup != null) {
                                     currentGroup.paths.add(gradientPath)
                                 } else {
@@ -155,9 +164,9 @@ class IconParser(private val icon: Icon) {
                             val offset = parser.getValueAsFloat(OFFSET) ?: 0f
                             val colorHex = parser.getAttributeValue(null, COLOR).toHexColor()
 
-                            val colorStop = Pair(offset,colorHex)
+                            val colorStop = Pair(offset, colorHex)
                             val lastPath = (currentGroup?.paths?.last() ?: nodes.last()) as? VectorNode.Path
-                            when (lastPath?.fill){
+                            when (lastPath?.fill) {
                                 is Fill.LinearGradient -> lastPath.fill.colorStops.add(colorStop)
                                 is Fill.RadialGradient -> lastPath.fill.colorStops.add(colorStop)
                                 else -> {}
@@ -172,8 +181,8 @@ class IconParser(private val icon: Icon) {
         return Vector(
             width,
             height,
-            viewportWidth,
-            viewportHeight,
+            viewportWidth * scale.x,
+            viewportHeight * scale.y,
             nodes
         )
     }
@@ -205,7 +214,7 @@ private val hexRegex = "^[0-9a-fA-F]{6,8}".toRegex()
 private fun String.toHexColor(): String {
     return removePrefix("#")
         .let {
-            if(hexRegex.matches(it)) {
+            if (hexRegex.matches(it)) {
                 if (it.length > 6) it
                 else "FF$it"
             } else {

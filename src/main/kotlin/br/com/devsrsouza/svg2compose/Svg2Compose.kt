@@ -11,6 +11,11 @@ import kotlin.io.path.createTempDirectory
 
 typealias IconNameTransformer = (iconName: String, group: String) -> String
 
+data class Size(val height: Float, val width: Float) {
+    constructor(size: Float) : this(size, size)
+    constructor(size: Int) : this(size.toFloat())
+}
+
 object Svg2Compose {
 
     /**
@@ -29,7 +34,7 @@ object Svg2Compose {
         type: VectorType = VectorType.SVG,
         iconNameTransformer: IconNameTransformer = { it, _ -> it },
         allAssetsPropertyName: String = "AllAssets",
-        defaultSize: Int? = null,
+        size: Size? = null,
     ): ParsingResult {
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
 
@@ -90,7 +95,7 @@ object Svg2Compose {
                             icons.values,
                             groupClassName,
                             iconsPackage,
-                            defaultSize
+                            size
                         )
 
                         val memberNames = writer.generateTo(outputSourceDirectory) { true }

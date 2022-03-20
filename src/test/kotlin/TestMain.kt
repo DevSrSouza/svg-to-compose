@@ -27,7 +27,7 @@ class TestMain {
             iconNameTransformer = { name, group ->
                 name.removeSuffix(group, ignoreCase = true)
             },
-            defaultSize = 24
+            size = Size(24)
         )
 
         val generatedIconsDir = File(destinationDir, "br/com/compose/icons")

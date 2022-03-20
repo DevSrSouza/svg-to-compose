@@ -16,6 +16,7 @@
 
 package androidx.compose.material.icons.generator.vector
 
+import androidx.compose.material.icons.generator.ScaleFactor
 import kotlin.math.min
 
 /**
@@ -28,11 +29,11 @@ object PathParser {
      * arguments
      * throws an IllegalArgumentException or NumberFormatException if the parameters are invalid
      */
-    fun parsePathString(pathData: String): List<PathNode> {
+    fun parsePathString(pathData: String, scale: ScaleFactor = ScaleFactor()): List<PathNode> {
         val nodes = mutableListOf<PathNode>()
 
         fun addNode(cmd: Char, args: FloatArray) {
-            nodes.addAll(cmd.toPathNodes(args))
+            nodes.addAll(cmd.toPathNodes(args, scale))
         }
 
         var start = 0
