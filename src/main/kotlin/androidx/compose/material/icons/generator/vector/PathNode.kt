@@ -16,6 +16,9 @@
 
 package androidx.compose.material.icons.generator.vector
 
+import androidx.compose.material.icons.generator.ScaleFactor
+import com.google.common.math.Quantiles.Scale
+
 /**
  * Class representing a singular path command in a vector.
  *
@@ -39,6 +42,7 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
     data class RelativeMoveTo(val x: Float, val y: Float) : PathNode() {
         override fun asFunctionCall() = "moveToRelative(${x}f, ${y}f)"
     }
+
     data class MoveTo(val x: Float, val y: Float) : PathNode() {
         override fun asFunctionCall() = "moveTo(${x}f, ${y}f)"
     }
@@ -46,6 +50,7 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
     data class RelativeLineTo(val x: Float, val y: Float) : PathNode() {
         override fun asFunctionCall() = "lineToRelative(${x}f, ${y}f)"
     }
+
     data class LineTo(val x: Float, val y: Float) : PathNode() {
         override fun asFunctionCall() = "lineTo(${x}f, ${y}f)"
     }
@@ -53,6 +58,7 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
     data class RelativeHorizontalTo(val x: Float) : PathNode() {
         override fun asFunctionCall() = "horizontalLineToRelative(${x}f)"
     }
+
     data class HorizontalTo(val x: Float) : PathNode() {
         override fun asFunctionCall() = "horizontalLineTo(${x}f)"
     }
@@ -60,6 +66,7 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
     data class RelativeVerticalTo(val y: Float) : PathNode() {
         override fun asFunctionCall() = "verticalLineToRelative(${y}f)"
     }
+
     data class VerticalTo(val y: Float) : PathNode() {
         override fun asFunctionCall() = "verticalLineTo(${y}f)"
     }
@@ -145,7 +152,8 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
         val arcStartDx: Float,
         val arcStartDy: Float
     ) : PathNode() {
-        override fun asFunctionCall() = "arcToRelative(${horizontalEllipseRadius}f, ${verticalEllipseRadius}f, ${theta}f, $isMoreThanHalf, $isPositiveArc, ${arcStartDx}f, ${arcStartDy}f)"
+        override fun asFunctionCall() =
+            "arcToRelative(${horizontalEllipseRadius}f, ${verticalEllipseRadius}f, ${theta}f, $isMoreThanHalf, $isPositiveArc, ${arcStartDx}f, ${arcStartDy}f)"
     }
 
     data class ArcTo(
@@ -157,7 +165,8 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
         val arcStartX: Float,
         val arcStartY: Float
     ) : PathNode() {
-        override fun asFunctionCall() = "arcTo(${horizontalEllipseRadius}f, ${verticalEllipseRadius}f, ${theta}f, $isMoreThanHalf, $isPositiveArc, ${arcStartX}f, ${arcStartY}f)"
+        override fun asFunctionCall() =
+            "arcTo(${horizontalEllipseRadius}f, ${verticalEllipseRadius}f, ${theta}f, $isMoreThanHalf, $isPositiveArc, ${arcStartX}f, ${arcStartY}f)"
     }
 }
 /* ktlint-enable max-line-length */
@@ -168,7 +177,7 @@ sealed class PathNode(val isCurve: Boolean = false, val isQuad: Boolean = false)
  * @return [PathNode] that matches the key
  * @throws IllegalArgumentException
  */
-internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
+internal fun Char.toPathNodes(args: FloatArray, scale: ScaleFactor = ScaleFactor()): List<PathNode> = when (this) {
     RelativeCloseKey, CloseKey -> listOf(
         PathNode.Close
     )
@@ -177,8 +186,8 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_MOVE_TO_ARGS
     ) { array ->
         PathNode.RelativeMoveTo(
-            x = array[0],
-            y = array[1]
+            x = array[0] * scale.x,
+            y = array[1] * scale.y
         )
     }
 
@@ -187,8 +196,8 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_MOVE_TO_ARGS
     ) { array ->
         PathNode.MoveTo(
-            x = array[0],
-            y = array[1]
+            x = array[0] * scale.x,
+            y = array[1] * scale.y
         )
     }
 
@@ -197,8 +206,8 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_LINE_TO_ARGS
     ) { array ->
         PathNode.RelativeLineTo(
-            x = array[0],
-            y = array[1]
+            x = array[0] * scale.x,
+            y = array[1] * scale.y
         )
     }
 
@@ -207,8 +216,8 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_LINE_TO_ARGS
     ) { array ->
         PathNode.LineTo(
-            x = array[0],
-            y = array[1]
+            x = array[0] * scale.x,
+            y = array[1] * scale.y
         )
     }
 
@@ -217,7 +226,7 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_HORIZONTAL_TO_ARGS
     ) { array ->
         PathNode.RelativeHorizontalTo(
-            x = array[0]
+            x = array[0] * scale.x
         )
     }
 
@@ -225,21 +234,21 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         args,
         NUM_HORIZONTAL_TO_ARGS
     ) { array ->
-        PathNode.HorizontalTo(x = array[0])
+        PathNode.HorizontalTo(x = array[0] * scale.x)
     }
 
     RelativeVerticalToKey -> pathNodesFromArgs(
         args,
         NUM_VERTICAL_TO_ARGS
     ) { array ->
-        PathNode.RelativeVerticalTo(y = array[0])
+        PathNode.RelativeVerticalTo(y = array[0] * scale.y)
     }
 
     VerticalToKey -> pathNodesFromArgs(
         args,
         NUM_VERTICAL_TO_ARGS
     ) { array ->
-        PathNode.VerticalTo(y = array[0])
+        PathNode.VerticalTo(y = array[0] * scale.y)
     }
 
     RelativeCurveToKey -> pathNodesFromArgs(
@@ -247,12 +256,12 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_CURVE_TO_ARGS
     ) { array ->
         PathNode.RelativeCurveTo(
-            dx1 = array[0],
-            dy1 = array[1],
-            dx2 = array[2],
-            dy2 = array[3],
-            dx3 = array[4],
-            dy3 = array[5]
+            dx1 = array[0] * scale.x,
+            dy1 = array[1] * scale.y,
+            dx2 = array[2] * scale.x,
+            dy2 = array[3] * scale.y,
+            dx3 = array[4] * scale.x,
+            dy3 = array[5] * scale.y
         )
     }
 
@@ -261,12 +270,12 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_CURVE_TO_ARGS
     ) { array ->
         PathNode.CurveTo(
-            x1 = array[0],
-            y1 = array[1],
-            x2 = array[2],
-            y2 = array[3],
-            x3 = array[4],
-            y3 = array[5]
+            x1 = array[0] * scale.x,
+            y1 = array[1] * scale.y,
+            x2 = array[2] * scale.x,
+            y2 = array[3] * scale.y,
+            x3 = array[4] * scale.x,
+            y3 = array[5] * scale.y
         )
     }
 
@@ -275,10 +284,10 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_REFLECTIVE_CURVE_TO_ARGS
     ) { array ->
         PathNode.RelativeReflectiveCurveTo(
-            x1 = array[0],
-            y1 = array[1],
-            x2 = array[2],
-            y2 = array[3]
+            x1 = array[0] * scale.x,
+            y1 = array[1] * scale.y,
+            x2 = array[2] * scale.x,
+            y2 = array[3] * scale.y
         )
     }
 
@@ -287,10 +296,10 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_REFLECTIVE_CURVE_TO_ARGS
     ) { array ->
         PathNode.ReflectiveCurveTo(
-            x1 = array[0],
-            y1 = array[1],
-            x2 = array[2],
-            y2 = array[3]
+            x1 = array[0] * scale.x,
+            y1 = array[1] * scale.y,
+            x2 = array[2] * scale.x,
+            y2 = array[3] * scale.y
         )
     }
 
@@ -299,10 +308,10 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_QUAD_TO_ARGS
     ) { array ->
         PathNode.RelativeQuadTo(
-            x1 = array[0],
-            y1 = array[1],
-            x2 = array[2],
-            y2 = array[3]
+            x1 = array[0] * scale.x,
+            y1 = array[1] * scale.y,
+            x2 = array[2] * scale.x,
+            y2 = array[3] * scale.y
         )
     }
 
@@ -311,10 +320,10 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_QUAD_TO_ARGS
     ) { array ->
         PathNode.QuadTo(
-            x1 = array[0],
-            y1 = array[1],
-            x2 = array[2],
-            y2 = array[3]
+            x1 = array[0] * scale.x,
+            y1 = array[1] * scale.y,
+            x2 = array[2] * scale.x,
+            y2 = array[3] * scale.y
         )
     }
 
@@ -323,8 +332,8 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_REFLECTIVE_QUAD_TO_ARGS
     ) { array ->
         PathNode.RelativeReflectiveQuadTo(
-            x = array[0],
-            y = array[1]
+            x = array[0] * scale.x,
+            y = array[1] * scale.y
         )
     }
 
@@ -333,8 +342,8 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_REFLECTIVE_QUAD_TO_ARGS
     ) { array ->
         PathNode.ReflectiveQuadTo(
-            x = array[0],
-            y = array[1]
+            x = array[0] * scale.x,
+            y = array[1] * scale.y
         )
     }
 
@@ -343,13 +352,13 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_ARC_TO_ARGS
     ) { array ->
         PathNode.RelativeArcTo(
-            horizontalEllipseRadius = array[0],
-            verticalEllipseRadius = array[1],
+            horizontalEllipseRadius = array[0] * scale.x,
+            verticalEllipseRadius = array[1] * scale.y,
             theta = array[2],
-            isMoreThanHalf = array[3].compareTo(0.0f) != 0,
-            isPositiveArc = array[4].compareTo(0.0f) != 0,
-            arcStartDx = array[5],
-            arcStartDy = array[6]
+            isMoreThanHalf = (array[3] * scale.x).compareTo(0.0f) != 0,
+            isPositiveArc = (array[4] * scale.y).compareTo(0.0f) != 0,
+            arcStartDx = array[5] * scale.x,
+            arcStartDy = array[6] * scale.y
         )
     }
 
@@ -358,13 +367,13 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
         NUM_ARC_TO_ARGS
     ) { array ->
         PathNode.ArcTo(
-            horizontalEllipseRadius = array[0],
-            verticalEllipseRadius = array[1],
+            horizontalEllipseRadius = array[0] * scale.x,
+            verticalEllipseRadius = array[1] * scale.y,
             theta = array[2],
-            isMoreThanHalf = array[3].compareTo(0.0f) != 0,
-            isPositiveArc = array[4].compareTo(0.0f) != 0,
-            arcStartX = array[5],
-            arcStartY = array[6]
+            isMoreThanHalf = (array[3] * scale.x).compareTo(0.0f) != 0,
+            isPositiveArc = (array[4] * scale.y).compareTo(0.0f) != 0,
+            arcStartX = array[5] * scale.x,
+            arcStartY = array[6] * scale.y
         )
     }
 
@@ -374,6 +383,7 @@ internal fun Char.toPathNodes(args: FloatArray): List<PathNode> = when (this) {
 private inline fun pathNodesFromArgs(
     args: FloatArray,
     numArgs: Int,
+    scale: ScaleFactor = ScaleFactor(),
     nodeFor: (subArray: FloatArray) -> PathNode
 ): List<PathNode> {
     return (0..args.size - numArgs step numArgs).map { index ->
@@ -383,13 +393,13 @@ private inline fun pathNodesFromArgs(
             // According to the spec, if a MoveTo is followed by multiple pairs of coordinates,
             // the subsequent pairs are treated as implicit corresponding LineTo commands.
             node is PathNode.MoveTo && index > 0 -> PathNode.LineTo(
-                subArray[0],
-                subArray[1]
+                subArray[0] * scale.x,
+                subArray[1] * scale.y
             )
             node is PathNode.RelativeMoveTo && index > 0 ->
                 PathNode.RelativeLineTo(
-                    subArray[0],
-                    subArray[1]
+                    subArray[0] * scale.x,
+                    subArray[1] * scale.y
                 )
             else -> node
         }

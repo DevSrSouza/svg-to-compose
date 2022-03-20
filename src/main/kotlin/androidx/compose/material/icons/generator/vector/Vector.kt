@@ -25,7 +25,7 @@ import java.awt.LinearGradientPaint
  * [nodes] may either be a singleton list of the root group, or a list of root paths / groups if
  * there are multiple top level declaration.
  */
-class Vector(
+data class Vector(
     val width: GraphicUnit,
     val height: GraphicUnit,
     val viewportWidth: Float,
@@ -60,12 +60,13 @@ sealed class Fill {
         val startX: Float,
         val endY: Float,
         val endX: Float,
-        val colorStops: MutableList<Pair<Float,String>> = mutableListOf()
+        val colorStops: MutableList<Pair<Float, String>> = mutableListOf()
     ) : Fill()
+
     data class RadialGradient(
         val gradientRadius: Float,
         val centerX: Float,
         val centerY: Float,
-        val colorStops: MutableList<Pair<Float,String>> = mutableListOf()
-    ): Fill()
+        val colorStops: MutableList<Pair<Float, String>> = mutableListOf()
+    ) : Fill()
 }
