@@ -16,7 +16,7 @@
 
 package androidx.compose.material.icons.generator
 
-import br.com.devsrsouza.svg2compose.IconNameTransformer
+import br.com.devsrsouza.svg2compose.Size
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.MemberName
 import java.io.File
@@ -32,6 +32,7 @@ class IconWriter(
     private val icons: Collection<Icon>,
     private val groupClass: ClassName,
     private val groupPackage: String,
+    private val defaultSize: Size?,
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -55,10 +56,26 @@ class IconWriter(
         }.map { icon ->
             val iconName = icon.kotlinName
 
-            val vector = IconParser(icon).parse()
+            /**check [androidx.compose.material.icons.generator.vector.Vector]**/
+            val vector = IconParser(icon).parse(defaultSize).let { parsedVector ->
+                defaultSize?.let {
+                    parsedVector.copy(
+                        width = when (parsedVector.width) {
+                            is Pixel -> Pixel(defaultSize.width)
+                            is Dp -> Dp(defaultSize.width)
+                        },
+                        height = when (parsedVector.height) {
+                            is Pixel -> Pixel(defaultSize.height)
+                            is Dp -> Dp(defaultSize.height)
+                        }
+                    )
+                } ?: parsedVector
+            }
 
             val (fileSpec, accessProperty) = VectorAssetGenerator(
-                iconName,
+                 defaultSize?.let {
+                     "$iconName${it.maxValue}"
+                 } ?: iconName,
                 groupPackage,
                 vector
             ).createFileSpec(groupClass)
@@ -66,6 +83,9 @@ class IconWriter(
             fileSpec.writeTo(outputSrcDirectory)
 
             MemberName(fileSpec.packageName, accessProperty)
+
         }
+
     }
+
 }
