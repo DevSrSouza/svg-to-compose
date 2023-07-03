@@ -26,7 +26,7 @@ object Svg2Compose {
         outputSourceDirectory: File,
         vectorsDirectory: File,
         type: VectorType = VectorType.SVG,
-        iconNameTransformer: IconNameTransformer = { it, _ -> it },
+        iconNameTransformer: IconNameTransformer = { it, _ -> it.toKotlinPropertyName() },
         allAssetsPropertyName: String = "AllAssets"
     ): ParsingResult {
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
@@ -75,7 +75,7 @@ object Svg2Compose {
                         val icons: Map<VectorFile, Icon> = drawables.associate { (vectorFile, drawableFile) ->
                             vectorFile to Icon(
                                 iconNameTransformer(
-                                    drawableFile.nameWithoutExtension.toKotlinPropertyName().trim(),
+                                    drawableFile.nameWithoutExtension.trim(),
                                     groupName
                                 ),
                                 drawableFile.name,
