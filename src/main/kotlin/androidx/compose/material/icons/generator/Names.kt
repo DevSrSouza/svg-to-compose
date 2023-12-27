@@ -24,10 +24,15 @@ import com.squareup.kotlinpoet.MemberName
  */
 enum class PackageNames(val packageName: String) {
     MaterialIconsPackage("androidx.compose.material.icons"),
-    GraphicsPackage("androidx.compose.ui.graphics"),
+    UiPackage("androidx.compose.ui"),
+    GraphicsPackage(UiPackage.packageName + ".graphics"),
     VectorPackage(GraphicsPackage.packageName + ".vector"),
-    GeometryPackage("androidx.compose.ui.geometry"),
-    Unit("androidx.compose.ui.unit"),
+    GeometryPackage(UiPackage.packageName + ".geometry"),
+    Unit(UiPackage.packageName + ".unit"),
+    FoundationPackage("androidx.compose.foundation"),
+    LayoutPackage(FoundationPackage.packageName + ".layout"),
+    PreviewPackage(UiPackage.packageName + ".tooling.preview"),
+    RuntimePackage("androidx.compose.runtime"),
 }
 
 /**
@@ -40,6 +45,8 @@ object ClassNames {
     val StrokeCap = PackageNames.GraphicsPackage.className("StrokeCap", CompanionImportName)
     val StrokeJoin = PackageNames.GraphicsPackage.className("StrokeJoin", CompanionImportName)
     val Brush = PackageNames.GraphicsPackage.className("Brush", CompanionImportName)
+    val Preview = PackageNames.PreviewPackage.className("Preview")
+    val Composable = PackageNames.RuntimePackage.className("Composable")
 }
 
 /**
