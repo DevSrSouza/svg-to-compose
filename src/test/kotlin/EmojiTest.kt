@@ -16,6 +16,7 @@ fun main(){
         iconNameTransformer = { name, group ->
             name.split("-").joinToString(separator = "").removePrefix(group)
         },
-        allAssetsPropertyName = "AllIcons"
+        allAssetsPropertyName = "AllIcons",
+        generatePreview = true,
     )
 }

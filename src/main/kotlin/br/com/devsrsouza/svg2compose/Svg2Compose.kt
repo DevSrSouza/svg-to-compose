@@ -27,7 +27,8 @@ object Svg2Compose {
         vectorsDirectory: File,
         type: VectorType = VectorType.SVG,
         iconNameTransformer: IconNameTransformer = { it, _ -> it },
-        allAssetsPropertyName: String = "AllAssets"
+        allAssetsPropertyName: String = "AllAssets",
+        generatePreview: Boolean = true,
     ): ParsingResult {
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
 

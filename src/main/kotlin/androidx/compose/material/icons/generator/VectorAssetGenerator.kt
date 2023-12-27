@@ -38,11 +38,13 @@ data class VectorAssetGenerationResult(
  * @param iconTheme the theme that this vector belongs to. Used to scope the property to the
  * correct receiver object, and also for the package name of the generated file.
  * @param vector the parsed vector to generate VectorAssetBuilder commands for
+ * @param generatePreview if true a preview for the icon will be created.
  */
 class VectorAssetGenerator(
     private val iconName: String,
     private val iconGroupPackage: String,
-    private val vector: Vector
+    private val vector: Vector,
+    private val generatePreview: Boolean
 ) {
     /**
      * @return a [FileSpec] representing a Kotlin source file containing the property for this
@@ -70,7 +72,9 @@ class VectorAssetGenerator(
                 .build()
         ).addProperty(
             backingProperty
-        ).setIndent().build()
+        )
+            .apply { if (generatePreview) addFunction(iconPreview(MemberName(groupClassName, iconName))) }
+            .setIndent().build()
 
         return VectorAssetGenerationResult(generation, iconName)
     }
@@ -116,7 +120,40 @@ class VectorAssetGenerator(
             .build()
     }
 
+    /**
+     * @param iconName Name that will be used to call the Icon inside the preview.
+     *
+     * Example:
+     * ```kotlin
+     *   @Preview
+     *   @Composable
+     *   private fun Preview(): Unit {
+     *      Box(modifier = Modifier.padding(12.dp)) {
+     *          Image(imageVector = Icon.Foo, contentDescription = "")
+     *      }
+     *   }
+     * ```
+     */
+    private fun iconPreview(iconName: MemberName): FunSpec {
+        val previewAnnotation = AnnotationSpec.builder(ClassNames.Preview).build()
+        val composableAnnotation = AnnotationSpec.builder(ClassNames.Composable).build()
+        val box = MemberName(PackageNames.LayoutPackage.packageName, "Box")
+        val modifier = MemberName(PackageNames.UiPackage.packageName, "Modifier")
+        val padding = MemberName(PackageNames.LayoutPackage.packageName, "padding")
+        val paddingValue = MemberNames.Dp
+        val composeImage = MemberName(PackageNames.FoundationPackage.packageName, "Image")
 
+        return FunSpec.builder("Preview")
+            .addModifiers(KModifier.PRIVATE)
+            .addAnnotation(previewAnnotation)
+            .addAnnotation(composableAnnotation)
+            .addCode(buildCodeBlock {
+                beginControlFlow("%M(modifier = %M.%M(12.%M))", box, modifier, padding, paddingValue)
+                addStatement("%M(imageVector = %M, contentDescription = \"\")", composeImage, iconName)
+                endControlFlow()
+            })
+            .build()
+    }
 }
 
 /**
