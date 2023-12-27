@@ -32,6 +32,7 @@ class IconWriter(
     private val icons: Collection<Icon>,
     private val groupClass: ClassName,
     private val groupPackage: String,
+    private val generatePreview: Boolean
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -60,7 +61,8 @@ class IconWriter(
             val (fileSpec, accessProperty) = VectorAssetGenerator(
                 iconName,
                 groupPackage,
-                vector
+                vector,
+                generatePreview
             ).createFileSpec(groupClass)
 
             fileSpec.writeTo(outputSrcDirectory)
