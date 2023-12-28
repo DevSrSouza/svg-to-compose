@@ -88,6 +88,7 @@ object Svg2Compose {
                             icons.values,
                             groupClassName,
                             iconsPackage,
+                            generatePreview
                         )
 
                         val memberNames = writer.generateTo(outputSourceDirectory) { true }
