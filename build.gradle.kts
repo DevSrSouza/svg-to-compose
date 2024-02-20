@@ -16,7 +16,7 @@ dependencies {
     implementation("com.google.guava:guava:23.6.1-jre")
     implementation("com.android.tools:sdk-common:27.2.2")
     implementation("com.android.tools:common:27.2.2")
-    implementation("com.squareup:kotlinpoet:1.9.0")
+    implementation("com.squareup:kotlinpoet:1.16.0")
     implementation("org.ogce:xpp3:1.1.6")
 
     testImplementation(kotlin("test-junit"))
