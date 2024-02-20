@@ -6,12 +6,6 @@ plugins {
 group = "br.com.devsrsouza"
 version = "0.7.0"
 
-repositories {
-    mavenCentral()
-    maven("https://maven.google.com")
-    maven("https://jetbrains.bintray.com/trove4j")
-}
-
 dependencies {
     implementation("com.google.guava:guava:33.0.0-jre")
     implementation("com.android.tools:sdk-common:31.2.2")
@@ -23,7 +17,7 @@ dependencies {
 }
 
 tasks.test {
-    useJUnit()
+    useJUnitPlatform()
 }
 
 java {
