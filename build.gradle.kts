@@ -8,8 +8,8 @@ version = "0.7.0"
 
 dependencies {
     implementation("com.google.guava:guava:33.0.0-jre")
-    implementation("com.android.tools:sdk-common:31.2.2")
-    implementation("com.android.tools:common:31.2.2")
+    implementation("com.android.tools:sdk-common:31.3.0")
+    implementation("com.android.tools:common:31.3.0")
     implementation("com.squareup:kotlinpoet:1.16.0")
     implementation("org.ogce:xpp3:1.1.6")
 
