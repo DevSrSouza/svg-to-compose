@@ -6,13 +6,13 @@ Converts SVG or Android Vector Drawable to Compose code.
 
 ### Why this project
 
-On the start of the [Compose for Desktop](https://www.jetbrains.com/lp/compose/) it does not support SVG files and Android Vector Drawables. This also difficulties a migration of the App to Multiplatform (Desktop and Android).
-Currently, it does support Android Vector Drawables in the Desktop allowing share your vectors. 
+On the start of [Compose for Desktop](https://www.jetbrains.com/lp/compose/) it did not support SVG files nor Android Vector Drawables. This also complicates a migration of the app to Multiplatform (Desktop and Android).
+Currently, it does support Android Vector Drawables in the Desktop allowing to share your vectors. 
 
 ### Use cases
 
-Now Compose for Desktop supports android vector drawables, this means that the first reason that the project was created does not apply anymore,
-this does not mean that it is not useful anymore.
+Now Compose for Desktop supports Android Vector Drawables. This means that the first reason why the project was created does not apply anymore.
+This however does not mean that it is not useful anymore.
 
 Use cases:
 - Manipulate dynamic an SVG file in code, you can generate and do source code modifications.
