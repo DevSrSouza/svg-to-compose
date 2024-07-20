@@ -21,7 +21,7 @@ dependencies {
 
     testImplementation(kotlin("test-junit"))
 
-    r8("com.android.tools:r8:8.2.47")
+    r8("com.android.tools:r8:8.3.37")
 }
 
 tasks.test {
