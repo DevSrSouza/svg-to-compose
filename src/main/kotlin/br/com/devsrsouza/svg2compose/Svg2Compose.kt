@@ -125,7 +125,7 @@ object Svg2Compose {
                     groupStack.peek()
 
                 val allAssetsGenerator = AllIconAccessorGenerator(
-                    group.generatedIconsMemberNames.values,
+                    group.generatedIconsMemberNames.values.sortedBy { it.simpleName },
                     group.groupClass,
                     allAssetsPropertyName,
                     group.childGroups

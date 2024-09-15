@@ -73,7 +73,7 @@ class VectorAssetGenerator(
         ).addProperty(
             backingProperty
         )
-            .apply { if (generatePreview) addFunction(iconPreview(MemberName(groupClassName, iconName))) }
+            .apply { if (generatePreview) addFunction(iconPreview(groupClassName.simpleName, iconName)) }
             .setIndent().build()
 
         return VectorAssetGenerationResult(generation, iconName)
@@ -134,7 +134,7 @@ class VectorAssetGenerator(
      *   }
      * ```
      */
-    private fun iconPreview(iconName: MemberName): FunSpec {
+    private fun iconPreview(groupName: String, iconName: String): FunSpec {
         val previewAnnotation = AnnotationSpec.builder(ClassNames.Preview).build()
         val composableAnnotation = AnnotationSpec.builder(ClassNames.Composable).build()
         val box = MemberName(PackageNames.LayoutPackage.packageName, "Box")
@@ -149,7 +149,7 @@ class VectorAssetGenerator(
             .addAnnotation(composableAnnotation)
             .addCode(buildCodeBlock {
                 beginControlFlow("%M(modifier = %M.%M(12.%M))", box, modifier, padding, paddingValue)
-                addStatement("%M(imageVector = %M, contentDescription = \"\")", composeImage, iconName)
+                addStatement("%M(imageVector = $groupName.$iconName, contentDescription = \"\")", composeImage)
                 endControlFlow()
             })
             .build()
