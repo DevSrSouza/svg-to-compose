@@ -19,6 +19,8 @@ object Svg2Compose {
      *
      * @param applicationIconPackage Represents what will be the final package of the generated Vector Source. ex com.yourcompany.yourapplication.icons
      * @param accessorName will be usage to access the Vector in the code like `MyIconPack.IconName` or `MyIconPack.IconGroupDir.IconName`
+     * @param generatePreview it will generate long side each group a String accessor called `Group.{allAssetsPropertyName}Named: Map<String, VectorImage>`
+     *      for parent groups, it will find child group icons by `childgroup.icon_name`.
      */
     fun parse(
         applicationIconPackage: String,
@@ -29,6 +31,7 @@ object Svg2Compose {
         iconNameTransformer: IconNameTransformer = { it, _ -> it.toKotlinPropertyName() },
         allAssetsPropertyName: String = "AllAssets",
         generatePreview: Boolean = true,
+        generateStringAccessor: Boolean = false,
     ): ParsingResult {
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
 
@@ -53,7 +56,8 @@ object Svg2Compose {
 
                 val (groupFileSpec, groupClassName) = IconGroupGenerator(
                     groupPackage,
-                    groupName
+                    groupName,
+                    generateStringAccessor,
                 ).createFileSpec(previousGroup?.groupClass)
 
 
@@ -128,7 +132,8 @@ object Svg2Compose {
                     group.generatedIconsMemberNames.values.sortedBy { it.simpleName },
                     group.groupClass,
                     allAssetsPropertyName,
-                    group.childGroups
+                    group.childGroups,
+                    generateStringAccessor,
                 )
 
                 for (propertySpec in allAssetsGenerator.createPropertySpec(group.groupFileSpec)) {

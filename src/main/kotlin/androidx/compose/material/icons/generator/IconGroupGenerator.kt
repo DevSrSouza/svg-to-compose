@@ -5,7 +5,8 @@ import java.io.File
 
 class IconGroupGenerator(
     private val groupPackage: String,
-    private val groupName: String
+    private val groupName: String,
+    private val generateStringAccessor: Boolean,
 ) {
 
     fun createFileSpec(previousGroupObject: ClassName?): Pair<FileSpec.Builder, ClassName> {
@@ -32,6 +33,14 @@ class IconGroupGenerator(
                         .getter(FunSpec.getterBuilder().addStatement("return $objectName").build())
                         .build()
                     )
+                    if (generateStringAccessor) {
+                        addProperty(
+                            PropertySpec.builder("groupName", STRING)
+                                .receiver(createdObjectClassName)
+                                .getter(FunSpec.getterBuilder().addStatement("return \"${groupName.lowercase()}\"").build())
+                                .build()
+                        )
+                    }
                 }
             } to createdObjectClassName
     }
