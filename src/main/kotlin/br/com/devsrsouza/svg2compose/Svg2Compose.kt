@@ -66,7 +66,7 @@ object Svg2Compose {
                                 val parsedFile = File(drawableDir, "${iconName}.xml")
                                 parsedFile.parentFile.mkdirs()
 
-                                Svg2Vector.parseSvgToXml(it, parsedFile.outputStream())
+                                Svg2Vector.parseSvgToXml(it.toPath(), parsedFile.outputStream())
 
                                 it to parsedFile
                             }.toList()
@@ -88,6 +88,7 @@ object Svg2Compose {
                             icons.values,
                             groupClassName,
                             iconsPackage,
+                            generatePreview
                         )
 
                         val memberNames = writer.generateTo(outputSourceDirectory) { true }

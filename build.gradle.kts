@@ -1,12 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.9.20"
     id("maven-publish")
 }
 
 group = "br.com.devsrsouza"
-version = "0.7.0"
+version = "0.10.0"
 
 repositories {
     mavenCentral()
@@ -16,8 +16,8 @@ repositories {
 
 dependencies {
     implementation("com.google.guava:guava:23.0")
-    implementation("com.android.tools:sdk-common:27.2.0-alpha16")
-    implementation("com.android.tools:common:27.2.0-alpha16")
+    implementation("com.android.tools:sdk-common:31.6.0")
+    implementation("com.android.tools:common:31.6.0")
     implementation("com.squareup:kotlinpoet:1.9.0")
     implementation("org.ogce:xpp3:1.1.6")
 
@@ -29,7 +29,13 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of("11"))
+    }
 }
 
 publishing {
