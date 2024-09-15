@@ -13,7 +13,9 @@ fun main() {
         vectorsDirectory = iconTest,
         iconNameTransformer = { name, group ->
             name.removeSuffix(group, ignoreCase = true)
-        }
+        },
+        generatePreview = true,
+        generateStringAccessor = true,
     )
 }
 

@@ -70,16 +70,24 @@ class AllIconAccessorGenerator(
         // preventing that a asset has the name List and conflict with Kotlin List import
         fileSpec.addAliasedImport(map, "____KtMap")
 
+        val allAssetsNamedPropertyName = "${allAssetsPropertyName}Named"
+
         val allIconsType = map.parameterizedBy(STRING, ClassNames.ImageVector)
-        val allIconsBackingProperty = backingPropertySpec("__${allAssetsPropertyName}Named", allIconsType)
+        val allIconsBackingProperty = backingPropertySpec("__$allAssetsNamedPropertyName", allIconsType)
 
-        val allIconsParametersFromGroups = childGroups.map { "%M.${allAssetsPropertyName}Named.mapKeys { \"\${%M.groupName}.\${it.key}\"}" }
+        val allIconsParametersFromGroups = childGroups.map { "%M.$allAssetsNamedPropertyName.mapKeys { \"\${%M.groupName}.\${it.key}\"}" }
 
-        val allIconsParameters = iconProperties.map { "${it.simpleName.lowercase()} to %M" }
+        // adding import to `AllAssetsNamed`
+        childGroups.forEach {
+            fileSpec.addImport(it.groupPackage, allAssetsNamedPropertyName)
+            fileSpec.addImport(it.groupPackage, "groupName")
+        }
+
+        val allIconsParameters = iconProperties.map { "\"${it.simpleName.lowercase()}\" to %M" }
         val parameters = allIconsParameters.joinToString(prefix = "(", postfix = ")")
         val childGroupsParameters = allIconsParametersFromGroups.joinToString(" + ")
 
-        val allIconProperty = PropertySpec.builder(allAssetsPropertyName, allIconsType)
+        val allIconProperty = PropertySpec.builder(allAssetsNamedPropertyName, allIconsType)
             .receiver(accessClass)
             .getter(FunSpec.getterBuilder().withBackingProperty(allIconsBackingProperty) {
                 addStatement(
