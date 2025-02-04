@@ -93,3 +93,24 @@ Svg2Compose.parse(
 **Using in code**: `LineaIcons.Arrows.Buhttps://github.com/overpas/svg-to-compose-intellijttonUp`
 
 The project also generate an accessor for all yours assets, for the given example, it should be `LineaIcons.AllIcons` and it also generated for child groups `LineaIcons.Arrows.AllIcons`
+
+### Example 3: Configuring autoMirror
+
+`autoMirrorRule` is an optional parameter that allows you to set a rule to set the `autoMirror`
+property the icons.
+
+```kotlin
+ val svgDir = File("dist/icons/svg")
+val outputDir = File("src/main/kotlin")
+
+Svg2Compose.parse(
+    applicationIconPackage = "com.example",
+    accessorName = "Icons",
+    outputSourceDirectory = outputDir,
+    vectorsDirectory = svgDir,
+    type = VectorType.SVG,
+    iconNameTransformer = { name, group -> name.removePrefix(group) },
+    allAssetsPropertyName = "AllIcons",
+    autoMirrorRule = { name -> autoMirroredIconsList.contains(name.lowercase()) },
+)
+```

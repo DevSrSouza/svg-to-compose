@@ -39,12 +39,14 @@ data class VectorAssetGenerationResult(
  * correct receiver object, and also for the package name of the generated file.
  * @param vector the parsed vector to generate VectorAssetBuilder commands for
  * @param generatePreview if true a preview for the icon will be created.
+ * @param autoMirrorSpec if not null, autoMirror parameter will be set with the value.
  */
 class VectorAssetGenerator(
     private val iconName: String,
     private val iconGroupPackage: String,
     private val vector: Vector,
-    private val generatePreview: Boolean
+    private val generatePreview: Boolean,
+    private val autoMirrorSpec: Boolean? = null
 ) {
     /**
      * @return a [FileSpec] representing a Kotlin source file containing the property for this
@@ -92,7 +94,10 @@ class VectorAssetGenerator(
                 "defaultWidth = ${width.withMemberIfNotNull}",
                 "defaultHeight = ${height.withMemberIfNotNull}",
                 "viewportWidth = ${viewportWidth}f",
-                "viewportHeight = ${viewportHeight}f"
+                "viewportHeight = ${viewportHeight}f",
+                autoMirrorSpec?.let { autoMirror ->
+                    "autoMirror = $autoMirror"
+                }
             )
         }
 

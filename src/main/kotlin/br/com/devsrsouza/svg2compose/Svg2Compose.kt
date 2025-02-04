@@ -9,6 +9,7 @@ import java.io.File
 import java.util.*
 
 typealias IconNameTransformer = (iconName: String, group: String) -> String
+typealias AutoMirrorRule = (iconName: String) -> Boolean
 
 object Svg2Compose {
 
@@ -21,6 +22,7 @@ object Svg2Compose {
      * @param accessorName will be usage to access the Vector in the code like `MyIconPack.IconName` or `MyIconPack.IconGroupDir.IconName`
      * @param generatePreview it will generate long side each group a String accessor called `Group.{allAssetsPropertyName}Named: Map<String, VectorImage>`
      *      for parent groups, it will find child group icons by `childgroup.icon_name`.
+     * @param autoMirrorRule used to add the autoMirror attribute to the generated vector based on the icon name
      */
     fun parse(
         applicationIconPackage: String,
@@ -32,6 +34,7 @@ object Svg2Compose {
         allAssetsPropertyName: String = "AllAssets",
         generatePreview: Boolean = true,
         generateStringAccessor: Boolean = false,
+        autoMirrorRule: AutoMirrorRule? = null,
     ): ParsingResult {
         fun nameRelative(vectorFile: File) = vectorFile.relativeTo(vectorsDirectory).path
 
@@ -92,7 +95,8 @@ object Svg2Compose {
                             icons.values,
                             groupClassName,
                             iconsPackage,
-                            generatePreview
+                            generatePreview,
+                            autoMirrorRule
                         )
 
                         val memberNames = writer.generateTo(outputSourceDirectory) { true }

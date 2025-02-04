@@ -16,6 +16,7 @@
 
 package androidx.compose.material.icons.generator
 
+import br.com.devsrsouza.svg2compose.AutoMirrorRule
 import br.com.devsrsouza.svg2compose.IconNameTransformer
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.MemberName
@@ -32,7 +33,8 @@ class IconWriter(
     private val icons: Collection<Icon>,
     private val groupClass: ClassName,
     private val groupPackage: String,
-    private val generatePreview: Boolean
+    private val generatePreview: Boolean,
+    private val autoMirrorRule: AutoMirrorRule?,
 ) {
     /**
      * Generates icons and writes them to [outputSrcDirectory], using [iconNamePredicate] to
@@ -62,7 +64,8 @@ class IconWriter(
                 iconName,
                 groupPackage,
                 vector,
-                generatePreview
+                generatePreview,
+                autoMirrorRule?.let { autoMirror -> autoMirror(iconName) },
             ).createFileSpec(groupClass)
 
             fileSpec.writeTo(outputSrcDirectory)
